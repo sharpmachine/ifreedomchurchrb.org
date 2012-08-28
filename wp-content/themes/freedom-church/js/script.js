@@ -13,7 +13,7 @@ jQuery(document).ready(function($) {
 });
 
 jQuery(document).ready(function($) {
-	$("ul#ticker01").liScroll();	
+	$("ul#ticker").liScroll();	
 });
 
 

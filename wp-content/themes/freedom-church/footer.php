@@ -4,11 +4,11 @@
 			<div class="container">
 				<div id="ticker-container">
 			
-						<span>Testimonies</span>
-						<ul id="ticker01">
+						<div class="testimonies-title">Testimonies</div>
+						<ul id="ticker">
 							<?php query_posts('cat=4'); ?> 
 							<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
-								<li><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> - <?php echo get_the_excerpt(); ?></li>
+								<li><img src="<?php bloginfo('template_directory'); ?>/img/testimonies-divider.png" width="36" height="38" alt="Testimonies Divider"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> - <?php echo get_the_excerpt(); ?></li>
 							<?php endwhile; else: ?>
 								No Testimonies at this time
 							<?php endif; ?>

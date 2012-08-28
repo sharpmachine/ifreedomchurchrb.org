@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-		<section id="page" class="span8">
+		<section id="page">
 
 			<?php
 			/* Run the loop to output the post.
@@ -12,5 +12,4 @@
 
 		</section><!-- #page -->
 
-<?php get_sidebar(); ?>
 <?php get_footer(); ?>
