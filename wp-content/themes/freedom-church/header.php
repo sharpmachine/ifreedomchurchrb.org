@@ -34,9 +34,8 @@
 		<link href='http://fonts.googleapis.com/css?family=Oswald:400,300' rel='stylesheet' type='text/css'>
 		<link href='http://fonts.googleapis.com/css?family=Istok+Web' rel='stylesheet' type='text/css'>
     	<link href="<?php bloginfo('template_directory'); ?>/css/bootstrap.css" rel="stylesheet">
-		<!-- <link rel="stylesheet" href="<?php bloginfo("template_directory"); ?>/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8"> -->
+    	<link href="<?php bloginfo('template_directory'); ?>/css/responsive.css" rel="stylesheet">
 
-    	<!-- <link href="<?php bloginfo('template_directory'); ?>/css/responsive.css" rel="stylesheet"> -->
 		<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>" />
 
     	<!-- Le fav and touch icons -->

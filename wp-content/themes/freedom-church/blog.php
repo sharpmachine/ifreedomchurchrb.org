@@ -4,7 +4,7 @@
 */
 get_header(); ?>
 
-				<section id="page" class="span8">
+				<section id="page">
 
 					<?php get_template_part( 'loop', 'page' ); ?>
 					<?php rewind_posts(); ?>
@@ -12,5 +12,4 @@ get_header(); ?>
 		
 				</section><!-- #page -->
 
-<?php get_sidebar(); ?>
 <?php get_footer(); ?>

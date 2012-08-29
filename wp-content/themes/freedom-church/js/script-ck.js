@@ -1,4 +1,4 @@
 /* Author: 
 
 */// Allows you to use the $ shortcut.  Put all your code  inside this wrapper
-jQuery(document).ready(function(e){e("li.dropdown > a").addClass("dropdown-toggle");e("li.dropdown > a").attr("data-toggle","dropdown");e("a.dropdown-toggle").append('<b class="caret"></b>')});jQuery(document).ready(function(e){e("ul#ticker").liScroll()});
+jQuery(document).ready(function(e){e("li.dropdown > a").addClass("dropdown-toggle");e("li.dropdown > a").attr("data-toggle","dropdown");e("a.dropdown-toggle").append('<b class="caret"></b>')});jQuery(document).ready(function(e){e("ul#ticker").liScroll()});jQuery(document).ready(function(e){e("a.open-info-box").click(function(){e(".info-box,.see-map").fadeOut();e(".info-box,.visiting-info").fadeToggle()});e("a.open-map").click(function(){e(".info-box,.visiting-info").fadeOut();e(".info-box,.see-map").fadeToggle()});e(".close-box").click(function(){e(".info-box").fadeOut()})});

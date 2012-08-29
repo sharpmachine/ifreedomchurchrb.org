@@ -2,6 +2,203 @@
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
 
+h4
+{
+	.oswald-book;
+	font-size: 18px;
+}
+
+.hero
+{
+	width: 1200px;
+	height: 717px;
+	position: relative;
+	left: -115px;
+	background: url(../img/home-ph.jpg) no-repeat;
+	.box-shadow;
+}
+
+.hero-content
+{
+	width: 670px;
+	margin-left: 405px;
+}
+
+h2.tagline
+{
+	padding-top: 45px;
+	margin-bottom: 25px;
+	line-height: 50px;
+	text-transform: none;
+	.istok;
+	font-size: 46px;
+	color: @blueDark;
+}
+
+#church-info
+{
+	height: 542px;
+}
+
+.service-info
+{
+	margin-left: 0;
+	padding-top: 30px;
+	.istok;
+	color: @black;
+	
+	h2
+	{
+		.oswald-book;
+		color: @blueDark;
+	}
+}
+
+.info-title
+{
+	margin: 15px 0 5px 0;
+	font-size: 24px;
+	color: @blue;
+}
+
+.service-time
+{
+	font-size: 18px;
+	line-height: 30px;
+}
+
+.related-info
+{
+	a img
+	{
+		display: inline-block;
+		float: right;
+		position: relative;
+		top: -6px;
+	}
+}
+
+.info-box
+{
+	height: 315px;
+	background: url(../img/tile.gif);
+	position: relative;
+	display: none;
+}
+
+a.visting
+{
+	margin-top: 20px;
+}
+
+.see-map
+{
+	padding: 45px 20px;
+	display: none;
+	
+	a
+	{
+		display: block;
+		margin-top: 15px;
+		font-family: @sansFontFamily;
+		color: @greenLight;
+	}
+}
+
+.visiting-info
+{
+	padding: 20px 30px;
+	display: none;
+	
+	p
+	{
+		.istok;
+		font-size: 12px;
+	}
+	
+	p.sudo-title
+	{
+		font-size: 24px;
+		color: @greenLight;
+		line-height: 30px;
+	}
+}
+
+.close-box
+{
+	position: absolute;
+	top: 5px;
+	right: 7px;
+	
+	a
+	{
+		color: @greenLight;
+		
+		&:hover
+		{
+			text-decoration: none;
+		}
+	}
+}
+
+#news-feed
+{
+	width: 685px;
+	height: 175px;
+	float: left;
+	background-color: @blue;
+	font-family: @sansFontFamily;
+	color: @grayLighter;
+	
+	a
+	{
+		color: @white;
+	}
+	
+	h4
+	{
+		margin-bottom: 20px;
+	}
+	
+	span
+	{
+		.istok;
+		font-size: 16px;
+		color: @black;
+	}
+}
+
+#news-feed-content
+{
+	width: 205px;
+	padding: 35px 70px 40px 0;
+	float: right;
+}
+
+#promote
+{
+	width: 515px;
+	height: 175px;
+	float: left;
+	background: url(../img/ignite-bg-small.jpg) no-repeat;
+	
+	a
+	{
+		display: block;
+		margin: 25px 0 0 65px;
+	}
+	
+	h4
+	{
+		display: inline-block;
+		margin: 15px 0 0 65px;
+		padding: 5px 10px;
+		color: @white;
+		background-color: rgba(0,0,0,0.5);
+		.border-radius(20px);
+	}
+}
+
 #navigation-shadow
 {
 	width: 245px;
@@ -17,7 +214,6 @@ Project Name: Freedom Church - ifreedomchurchrb.com
 	width: 230px;
 	height: 100%;
 	.gradient;
-	
 }
 
 #navigation
@@ -26,7 +222,7 @@ Project Name: Freedom Church - ifreedomchurchrb.com
 	margin-left: 0;
 	position: fixed;
 	z-index: 2;
-	background: url(../img/crosses.png);
+	/*background: url(../img/tile.gif);*/
 	
 	li a
 	{
@@ -50,7 +246,7 @@ a.brand
 {
 	padding-left: 75px;
 	position: absolute;
-	bottom: 25px;
+	bottom: 15px;
 	
 	a
 	{
@@ -58,10 +254,19 @@ a.brand
 	}
 }
 
+body.logged-in #social-media
+{
+	bottom: 43px;
+}
+
+.map
+{
+	border: solid 10px @white;
+}
+
 #page
 {
-	margin-left: 290px;
-	margin-bottom: 95px;
+	margin: 50px 0 95px 290px;
 }
 
 footer

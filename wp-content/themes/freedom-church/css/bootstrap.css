@@ -172,8 +172,8 @@ textarea {
 }
 body {
   margin: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
   line-height: 18px;
   color: #666666;
   background-color: #ffffff;
@@ -502,12 +502,12 @@ a:hover {
 }
 p {
   margin: 0 0 9px;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
   line-height: 18px;
 }
 p small {
-  font-size: 11px;
+  font-size: 12px;
   color: #e6e6e6;
 }
 .lead {
@@ -711,7 +711,7 @@ code,
 pre {
   padding: 0 3px 2px;
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: #666666;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -727,7 +727,7 @@ pre {
   display: block;
   padding: 8.5px;
   margin: 0 0 9px;
-  font-size: 12.025px;
+  font-size: 12.950000000000001px;
   line-height: 18px;
   word-break: break-all;
   word-wrap: break-word;
@@ -766,7 +766,7 @@ legend {
   width: 100%;
   padding: 0;
   margin-bottom: 27px;
-  font-size: 19.5px;
+  font-size: 21px;
   line-height: 36px;
   color: #666666;
   border: 0;
@@ -781,7 +781,7 @@ input,
 button,
 select,
 textarea {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: normal;
   line-height: 18px;
 }
@@ -789,7 +789,7 @@ input,
 button,
 select,
 textarea {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
 }
 label {
   display: block;
@@ -805,7 +805,7 @@ select,
   height: 18px;
   padding: 4px;
   margin-bottom: 9px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 18px;
   color: #999999;
   background-color: #ffffff;
@@ -2105,7 +2105,7 @@ table .span24 {
   width: 0;
   height: 0;
   vertical-align: top;
-  border-top: 4px solid #000000;
+  border-top: 4px solid #333333;
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   content: "";
@@ -2189,7 +2189,7 @@ table .span24 {
 .dropup .caret,
 .navbar-fixed-bottom .dropdown .caret {
   border-top: 0;
-  border-bottom: 4px solid #000000;
+  border-bottom: 4px solid #333333;
   content: "\2191";
 }
 .dropup .dropdown-menu,
@@ -2265,13 +2265,13 @@ table .span24 {
   font-size: 20px;
   font-weight: bold;
   line-height: 18px;
-  color: #000000;
+  color: #333333;
   text-shadow: 0 1px 0 #ffffff;
   opacity: 0.2;
   filter: alpha(opacity=20);
 }
 .close:hover {
-  color: #000000;
+  color: #333333;
   text-decoration: none;
   cursor: pointer;
   opacity: 0.4;
@@ -2292,10 +2292,13 @@ button.close {
   *zoom: 1;
   padding: 4px 10px 4px;
   margin-bottom: 0;
-  font-size: 13px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  font-size: 14px;
   line-height: 18px;
   *line-height: 20px;
-  color: #666666;
+  color: #2fb81b;
   text-align: center;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
   vertical-align: middle;
@@ -2382,19 +2385,19 @@ button.close {
   box-shadow: none;
 }
 .btn-large {
-  padding: 9px 14px;
-  font-size: 15px;
+  padding: 6px 12px;
+  font-size: 18px;
   line-height: normal;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
 }
 .btn-large [class^="icon-"] {
   margin-top: 1px;
 }
 .btn-small {
   padding: 5px 9px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
 }
 .btn-small [class^="icon-"] {
@@ -2402,7 +2405,7 @@ button.close {
 }
 .btn-mini {
   padding: 2px 6px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 14px;
 }
 .btn-primary,
@@ -2785,7 +2788,7 @@ input[type="submit"].btn.btn-mini {
   border-top-width: 5px;
 }
 .dropup .btn-large .caret {
-  border-bottom: 5px solid #000000;
+  border-bottom: 5px solid #333333;
   border-top: 0;
 }
 .btn-primary .caret,
@@ -3034,7 +3037,7 @@ input[type="submit"].btn.btn-mini {
   border-bottom-color: #666666;
 }
 .nav > .dropdown.active > a:hover {
-  color: #000000;
+  color: #333333;
   cursor: pointer;
 }
 .nav-tabs .open .dropdown-toggle,
@@ -3460,7 +3463,7 @@ input[type="submit"].btn.btn-mini {
   bottom: 0;
   left: 0;
   z-index: 1040;
-  background-color: #000000;
+  background-color: #333333;
 }
 .modal-backdrop.fade {
   opacity: 0;
@@ -3581,7 +3584,7 @@ input[type="submit"].btn.btn-mini {
   margin-left: -5px;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #000000;
+  border-top: 5px solid #333333;
 }
 .tooltip.left .tooltip-arrow {
   top: 50%;
@@ -3589,7 +3592,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 5px solid #000000;
+  border-left: 5px solid #333333;
 }
 .tooltip.bottom .tooltip-arrow {
   top: 0;
@@ -3597,7 +3600,7 @@ input[type="submit"].btn.btn-mini {
   margin-left: -5px;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 5px solid #000000;
+  border-bottom: 5px solid #333333;
 }
 .tooltip.right .tooltip-arrow {
   top: 50%;
@@ -3605,7 +3608,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-right: 5px solid #000000;
+  border-right: 5px solid #333333;
 }
 .tooltip-inner {
   max-width: 200px;
@@ -3613,7 +3616,7 @@ input[type="submit"].btn.btn-mini {
   color: #ffffff;
   text-align: center;
   text-decoration: none;
-  background-color: #000000;
+  background-color: #333333;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   border-radius: 4px;
@@ -3649,7 +3652,7 @@ input[type="submit"].btn.btn-mini {
   margin-left: -5px;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #000000;
+  border-top: 5px solid #333333;
 }
 .popover.right .arrow {
   top: 50%;
@@ -3657,7 +3660,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-right: 5px solid #000000;
+  border-right: 5px solid #333333;
 }
 .popover.bottom .arrow {
   top: 0;
@@ -3665,7 +3668,7 @@ input[type="submit"].btn.btn-mini {
   margin-left: -5px;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 5px solid #000000;
+  border-bottom: 5px solid #333333;
 }
 .popover.left .arrow {
   top: 50%;
@@ -3673,7 +3676,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 5px solid #000000;
+  border-left: 5px solid #333333;
 }
 .popover .arrow {
   position: absolute;
@@ -3684,7 +3687,7 @@ input[type="submit"].btn.btn-mini {
   padding: 3px;
   width: 280px;
   overflow: hidden;
-  background: #000000;
+  background: #333333;
   background: rgba(0, 0, 0, 0.8);
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
@@ -3767,7 +3770,7 @@ a.thumbnail:hover {
 }
 .label,
 .badge {
-  font-size: 10.998px;
+  font-size: 11.844px;
   font-weight: bold;
   line-height: 14px;
   color: #ffffff;
@@ -4167,6 +4170,156 @@ a.badge:hover {
 /*
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
+h4 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  font-size: 18px;
+}
+.hero {
+  width: 1200px;
+  height: 717px;
+  position: relative;
+  left: -115px;
+  background: url(../img/home-ph.jpg) no-repeat;
+  -webkit-box-shadow: 0 0 15px #999999;
+  -moz-box-shadow: 0 0 15px #999999;
+  box-shadow: 0 0 15px #999999;
+}
+.hero-content {
+  width: 670px;
+  margin-left: 405px;
+}
+h2.tagline {
+  padding-top: 45px;
+  margin-bottom: 25px;
+  line-height: 50px;
+  text-transform: none;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 46px;
+  color: #0c3551;
+}
+#church-info {
+  height: 542px;
+}
+.service-info {
+  margin-left: 0;
+  padding-top: 30px;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  color: #333333;
+}
+.service-info h2 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  color: #0c3551;
+}
+.info-title {
+  margin: 15px 0 5px 0;
+  font-size: 24px;
+  color: #2892d0;
+}
+.service-time {
+  font-size: 18px;
+  line-height: 30px;
+}
+.related-info a img {
+  display: inline-block;
+  float: right;
+  position: relative;
+  top: -6px;
+}
+.info-box {
+  height: 315px;
+  background: url(../img/tile.gif);
+  position: relative;
+  display: none;
+}
+a.visting {
+  margin-top: 20px;
+}
+.see-map {
+  padding: 45px 20px;
+  display: none;
+}
+.see-map a {
+  display: block;
+  margin-top: 15px;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #2fb81b;
+}
+.visiting-info {
+  padding: 20px 30px;
+  display: none;
+}
+.visiting-info p {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+}
+.visiting-info p.sudo-title {
+  font-size: 24px;
+  color: #2fb81b;
+  line-height: 30px;
+}
+.close-box {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+}
+.close-box a {
+  color: #2fb81b;
+}
+.close-box a:hover {
+  text-decoration: none;
+}
+#news-feed {
+  width: 685px;
+  height: 175px;
+  float: left;
+  background-color: #2892d0;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #c1bfbf;
+}
+#news-feed a {
+  color: #ffffff;
+}
+#news-feed h4 {
+  margin-bottom: 20px;
+}
+#news-feed span {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #333333;
+}
+#news-feed-content {
+  width: 205px;
+  padding: 35px 70px 40px 0;
+  float: right;
+}
+#promote {
+  width: 515px;
+  height: 175px;
+  float: left;
+  background: url(../img/ignite-bg-small.jpg) no-repeat;
+}
+#promote a {
+  display: block;
+  margin: 25px 0 0 65px;
+}
+#promote h4 {
+  display: inline-block;
+  margin: 15px 0 0 65px;
+  padding: 5px 10px;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.5);
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+}
 #navigation-shadow {
   width: 245px;
   height: 100%;
@@ -4208,7 +4361,8 @@ Project Name: Freedom Church - ifreedomchurchrb.com
   margin-left: 0;
   position: fixed;
   z-index: 2;
-  background: url(../img/crosses.png);
+  /*background: url(../img/tile.gif);*/
+
 }
 #navigation li a {
   padding: 5px 0 5px 70px;
@@ -4227,14 +4381,19 @@ a.brand {
 #social-media {
   padding-left: 75px;
   position: absolute;
-  bottom: 25px;
+  bottom: 15px;
 }
 #social-media a {
   margin-right: 5px;
 }
+body.logged-in #social-media {
+  bottom: 43px;
+}
+.map {
+  border: solid 10px #ffffff;
+}
 #page {
-  margin-left: 290px;
-  margin-bottom: 95px;
+  margin: 50px 0 95px 290px;
 }
 footer {
   width: 100%;

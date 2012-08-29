@@ -16,6 +16,21 @@ jQuery(document).ready(function($) {
 	$("ul#ticker").liScroll();	
 });
 
+jQuery(document).ready(function($) {
+	$("a.open-info-box").click(function(){
+		$(".info-box,.see-map").fadeOut();
+		$(".info-box,.visiting-info").fadeToggle();
+	});	
+	$("a.open-map").click(function(){
+		$(".info-box,.visiting-info").fadeOut();
+		$(".info-box,.see-map").fadeToggle();
+	});
+	
+	$(".close-box").click(function(){
+		$(".info-box").fadeOut();
+	});
+});
+
 
 
 

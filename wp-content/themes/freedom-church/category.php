@@ -1,9 +1,9 @@
 <?php get_header(); ?>
 
-		<section id="page" class="span8">
+		<section id="page">
 
 			<h1 class="page-title"><?php
-				printf( __( 'Category Archives: %s', 'smm' ), '<span>' . single_cat_title( '', false ) . '</span>' );
+				printf( __( '%s', 'smm' ), '<span>' . single_cat_title( '', false ) . '</span>' );
 			?></h1>
 			<?php
 				$category_description = category_description();
@@ -15,5 +15,4 @@
 
 		</section><!-- #page -->
 
-<?php get_sidebar(); ?>
 <?php get_footer(); ?>
