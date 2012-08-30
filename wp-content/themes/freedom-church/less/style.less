@@ -6,6 +6,7 @@ h4
 {
 	.oswald-book;
 	font-size: 18px;
+	color: @blue;
 }
 
 .hero
@@ -61,7 +62,7 @@ h2.tagline
 	color: @blue;
 }
 
-.service-time
+.sub-title
 {
 	font-size: 18px;
 	line-height: 30px;
@@ -81,7 +82,7 @@ h2.tagline
 .info-box
 {
 	height: 315px;
-	background: url(../img/tile.gif);
+	background: url(../img/tile.png);
 	position: relative;
 	display: none;
 }
@@ -222,7 +223,7 @@ a.visting
 	margin-left: 0;
 	position: fixed;
 	z-index: 2;
-	/*background: url(../img/tile.gif);*/
+	background: url(../img/tile.png);
 	
 	li a
 	{
@@ -264,9 +265,102 @@ body.logged-in #social-media
 	border: solid 10px @white;
 }
 
+#events
+{
+	.event
+	{
+		margin: 20px 0;
+	}
+	
+	p
+	{
+		.istok;
+		font-size: 12px;
+		color: @gray;
+	}
+	
+	.event-image
+	{
+		margin-left: 0;
+		
+		img
+		{
+			border: 12px solid @blue
+		}
+		
+	}
+	
+	.sub-title
+	{
+		margin-top: 5px;
+		color: @black;
+	}
+	
+	.related-info
+	{
+		margin-bottom: 15px;
+		color: grayDark;
+	}
+}
+
+#free-thinking
+{
+	margin: 40px 0 0 0;
+	float: none;
+	
+	h4
+	{
+		width: 127px;
+		padding-bottom: 20px;
+		margin: 0 auto 15px auto;
+		background: url(../img/sb-arrow.png) 60px 27px no-repeat;
+		
+		overflow: visible;
+		
+		span
+		{
+			padding: 8px 15px;
+			background-color: @blue;
+			.border-radius(10px);
+		}
+		
+		a
+		{
+			/*padding: 12px 15px;*/
+			color: @white;
+			display: block;
+		}
+	}
+}
+
+#ft-content
+{
+	border: solid 3px @blue;
+	.border-radius(15px);
+	
+	p
+	{
+		padding: 35px 70px 10px 70px;
+		font-family: @serifFontFamily;
+		font-style: italic;
+		
+		cite
+		{
+			margin-top: 10px;
+			display: block;
+			text-align: right;
+			.oswald-book;
+			font-size: 12px;
+			color: @blue;
+			text-transform: uppercase;
+		}
+	}
+	
+}
+
 #page
 {
-	margin: 50px 0 95px 290px;
+	margin: 50px 0 115px 290px;
 }
 
 footer

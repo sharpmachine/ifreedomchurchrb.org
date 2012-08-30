@@ -4175,6 +4175,7 @@ h4 {
   font-weight: 300;
   text-transform: uppercase;
   font-size: 18px;
+  color: #2892d0;
 }
 .hero {
   width: 1200px;
@@ -4221,7 +4222,7 @@ h2.tagline {
   font-size: 24px;
   color: #2892d0;
 }
-.service-time {
+.sub-title {
   font-size: 18px;
   line-height: 30px;
 }
@@ -4233,7 +4234,7 @@ h2.tagline {
 }
 .info-box {
   height: 315px;
-  background: url(../img/tile.gif);
+  background: url(../img/tile.png);
   position: relative;
   display: none;
 }
@@ -4361,8 +4362,7 @@ a.visting {
   margin-left: 0;
   position: fixed;
   z-index: 2;
-  /*background: url(../img/tile.gif);*/
-
+  background: url(../img/tile.png);
 }
 #navigation li a {
   padding: 5px 0 5px 70px;
@@ -4392,8 +4392,76 @@ body.logged-in #social-media {
 .map {
   border: solid 10px #ffffff;
 }
+#events .event {
+  margin: 20px 0;
+}
+#events p {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: #999999;
+}
+#events .event-image {
+  margin-left: 0;
+}
+#events .event-image img {
+  border: 12px solid #2892d0;
+}
+#events .sub-title {
+  margin-top: 5px;
+  color: #333333;
+}
+#events .related-info {
+  margin-bottom: 15px;
+  color: grayDark;
+}
+#free-thinking {
+  margin: 40px 0 0 0;
+  float: none;
+}
+#free-thinking h4 {
+  width: 127px;
+  padding-bottom: 20px;
+  margin: 0 auto 15px auto;
+  background: url(../img/sb-arrow.png) 60px 27px no-repeat;
+  overflow: visible;
+}
+#free-thinking h4 span {
+  padding: 8px 15px;
+  background-color: #2892d0;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+}
+#free-thinking h4 a {
+  /*padding: 12px 15px;*/
+
+  color: #ffffff;
+  display: block;
+}
+#ft-content {
+  border: solid 3px #2892d0;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+}
+#ft-content p {
+  padding: 35px 70px 10px 70px;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: italic;
+}
+#ft-content p cite {
+  margin-top: 10px;
+  display: block;
+  text-align: right;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: 12px;
+  color: #2892d0;
+  text-transform: uppercase;
+}
 #page {
-  margin: 50px 0 95px 290px;
+  margin: 50px 0 115px 290px;
 }
 footer {
   width: 100%;

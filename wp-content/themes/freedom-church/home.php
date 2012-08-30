@@ -7,9 +7,9 @@
 							<div class="span7 service-info">
 								<h2>Red Bluff, Ca</h2>
 								<div class="info-title">Service Times</div>
-								<div class="service-time">Mondays 7pm</div>
+								<div class="sub-title">Mondays 7pm</div>
 								<div class="related-info">Rio Street Red Bluff, CA <a href="#" class="open-map"><img src="<?php bloginfo('template_directory'); ?>/img/see-map.png" width="26" height="26" alt="See Map"></a></div>
-								<div class="service-time">Thursdays 7pm</div>
+								<div class="sub-title">Thursdays 7pm</div>
 								<div class="related-info">Red Bank Road, Red Bluff, CA <a href="http://maps.google.com/maps?saddr=&daddr=Rio Street, Red Bluff, Ca 96080"><img src="<?php bloginfo('template_directory'); ?>/img/get-directions.png" width="26" height="26" alt="See Map"></a></div>
 								<div class="info-title">Phone</div>
 								<div class="related-info">(530) 355 2284</div>
@@ -54,17 +54,24 @@
 
 				<section id="page">
 			
-					<h3>Upcoming Events</h3>
-						<?php echo do_shortcode( '[events_list]' ); ?>
+					<h4>Upcoming Events</h4>
+				
+						<article id="events">
+							<?php echo do_shortcode( '[events_list]' ); ?>
+						</article>
 					<hr>
-					
-						<h4><a href="<?php bloginfo('url'); ?>/category/free-thinking">Free Thinking</a></h4>
+					<article id="free-thinking" class="span16">
+						<h4><a href="<?php bloginfo('url'); ?>/category/free-thinking"><span>Free Thinking</span></a></h4>
+						<div id="ft-content">
 					<?php query_posts('cat=6&showposts=1'); ?>
 					<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
 						<?php the_content(); ?>
 					<?php endwhile; else: ?>
 						<p>No Free Thinking posts at this time.</p>
 					<?php endif; ?>
+						</div>
+					</article>
+						
 		
 				</section><!-- #page -->
 <?php get_footer(); ?>
