@@ -82,9 +82,15 @@ h2.tagline
 .info-box
 {
 	height: 315px;
-	background: url(../img/tile.png);
+	.gradient;
 	position: relative;
 	display: none;
+}
+
+.info-box-content
+{
+	height: 315px;
+	background: url(../img/tile.png);
 }
 
 a.visting
@@ -104,6 +110,11 @@ a.visting
 		font-family: @sansFontFamily;
 		color: @greenLight;
 	}
+}
+
+.map
+{
+	border: solid 10px @white;
 }
 
 .visiting-info
@@ -260,13 +271,10 @@ body.logged-in #social-media
 	bottom: 43px;
 }
 
-.map
-{
-	border: solid 10px @white;
-}
-
 #events
 {
+	margin-bottom: 30px;
+	
 	.event
 	{
 		margin: 20px 0;

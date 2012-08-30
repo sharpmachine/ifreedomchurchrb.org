@@ -616,8 +616,18 @@
     width: 1024px;
     left: -27px;
   }
+  .hero-content {
+    margin-left: 316px;
+  }
+  #promote {
+    width: 428px;
+    float: right;
+  }
   a.brand {
     margin: 20px auto;
+  }
+  #news-feed {
+    width: 596px;
   }
 }
 @media (max-width: 979px) {

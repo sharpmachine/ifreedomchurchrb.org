@@ -4234,9 +4234,36 @@ h2.tagline {
 }
 .info-box {
   height: 315px;
-  background: url(../img/tile.png);
+  background: #ffffff;
+  /* Old browsers */
+
+  background: -moz-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* FF3.6+ */
+
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(30%, #ffffff), color-stop(100%, #e6e6e6));
+  /* Chrome,Safari4+ */
+
+  background: -webkit-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* Chrome10+,Safari5.1+ */
+
+  background: -o-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* Opera 11.10+ */
+
+  background: -ms-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* IE10+ */
+
+  background: linear-gradient(to bottom, #ffffff 30%, #e6e6e6 100%);
+  /* W3C */
+
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  /* IE6-9 */
+
   position: relative;
   display: none;
+}
+.info-box-content {
+  height: 315px;
+  background: url(../img/tile.png);
 }
 a.visting {
   margin-top: 20px;
@@ -4250,6 +4277,9 @@ a.visting {
   margin-top: 15px;
   font-family: Helvetica, Arial, sans-serif;
   color: #2fb81b;
+}
+.map {
+  border: solid 10px #ffffff;
 }
 .visiting-info {
   padding: 20px 30px;
@@ -4389,8 +4419,8 @@ a.brand {
 body.logged-in #social-media {
   bottom: 43px;
 }
-.map {
-  border: solid 10px #ffffff;
+#events {
+  margin-bottom: 30px;
 }
 #events .event {
   margin: 20px 0;

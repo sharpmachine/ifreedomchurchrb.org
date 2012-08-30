@@ -16,18 +16,20 @@
 								<a href="#" class="open-info-box visting btn btn-large">Thinking of Visiting?</a>
 							</div>
 							<div class="span10 info-box">
-								<span class="close-box"><a href="#">X</a></span>
-								<div class="see-map">
-									<img src="http://maps.googleapis.com/maps/api/staticmap?center=Rio Street, Red Bluff, Ca&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRio Street, Red Bluff, Ca&sensor=false" alt="Map" class="map">
-									<a href="http://maps.google.com/maps?saddr=&daddr=Rio Street, Red Bluff, Ca 96080">Get Directions</a>
-								</div>
-								<div class="visiting-info">
-									<p class="sudo-title">Thinking of visiting?<br>
-									Here’s what you can expect.</p>
+								<div class="info-box-content">
+									<span class="close-box"><a href="#">X</a></span>
+									<div class="see-map">
+										<img src="http://maps.googleapis.com/maps/api/staticmap?center=Rio Street, Red Bluff, Ca&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRio Street, Red Bluff, Ca&sensor=false" alt="Map" class="map">
+										<a href="http://maps.google.com/maps?saddr=&daddr=Rio Street, Red Bluff, Ca 96080">Get Directions</a>
+									</div>
+									<div class="visiting-info">
+										<p class="sudo-title">Thinking of visiting?<br>
+										Here’s what you can expect.</p>
 									
-									<p>Visiting a church for the first time can be nerve-racking. But having an idea of what to expect can help! We meet as house church where we worship, share testimonies, have teaching and pray for each other. We love connecting with people and the intimacy small groups worshipping together creates.</p>
+										<p>Visiting a church for the first time can be nerve-racking. But having an idea of what to expect can help! We meet as house church where we worship, share testimonies, have teaching and pray for each other. We love connecting with people and the intimacy small groups worshipping together creates.</p>
 
-									<p>Our aim is to equip and activate our house churches to serve in the community, demonstrating the gospel with signs &amp; wonders to those they meet, thereby fulfilling the Ephesians 4 'equipping of the saints for the work of ministry'.</p>
+										<p>Our aim is to equip and activate our house churches to serve in the community, demonstrating the gospel with signs &amp; wonders to those they meet, thereby fulfilling the Ephesians 4 'equipping of the saints for the work of ministry'.</p>
+									</div>
 								</div>
 							</div>
 						</div>
