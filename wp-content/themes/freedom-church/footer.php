@@ -4,7 +4,7 @@
 			<div class="container">
 				<div id="ticker-container">
 			
-						<div class="testimonies-title">Testimonies</div>
+						<div class="testimonies-title"><a href="<?php bloginfo('url'); ?>/category/testimonies">Testimonies</a></div>
 						<ul id="ticker">
 							<?php query_posts('cat=4'); ?> 
 							<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
@@ -33,7 +33,6 @@
     <script src="<?php bloginfo('template_directory'); ?>/js/bootstrap-collapse.js"></script>
     <script src="<?php bloginfo('template_directory'); ?>/js/bootstrap-carousel.js"></script>
     <script src="<?php bloginfo('template_directory'); ?>/js/bootstrap-typeahead.js"></script>
-	<script src="<?php bloginfo('template_directory'); ?>/js/jquery.li-scroller.1.0.js" type="text/javascript" charset="utf-8"></script>
 
 	<!-- scripts concatenated and minified via ant build script-->
 	<script src="<?php bloginfo ('template_directory'); ?>/js/plugins.js"></script>

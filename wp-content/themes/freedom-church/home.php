@@ -6,22 +6,53 @@
 							<h2 class="tagline"><?php bloginfo('description'); ?></h2>
 							<div class="span7 service-info">
 								<h2>Red Bluff, Ca</h2>
-								<div class="info-title">Service Times</div>
+								<div class="info-title">Meeting Times</div>
+								
+								
 								<div class="sub-title">Mondays 7pm</div>
-								<div class="related-info">Rio Street Red Bluff, CA <a href="#" class="open-map"><img src="<?php bloginfo('template_directory'); ?>/img/see-map.png" width="26" height="26" alt="See Map"></a></div>
+								<div class="related-info">Rio Street Red Bluff, CA <a href="#" class="see-map-icon" data-box="post_id_1"></a><a href="http://maps.google.com/maps?saddr=&daddr=Rio Street Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_1"></a></div>
+								
+								
+								
 								<div class="sub-title">Thursdays 7pm</div>
-								<div class="related-info">Red Bank Road, Red Bluff, CA <a href="http://maps.google.com/maps?saddr=&daddr=Rio Street, Red Bluff, Ca 96080"><img src="<?php bloginfo('template_directory'); ?>/img/get-directions.png" width="26" height="26" alt="See Map"></a></div>
+								<div class="related-info">Red Bank Road, Red Bluff, CA <a href="#" class="see-map-icon" data-box="post_id_2"></a><a href="http://maps.google.com/maps?saddr=&daddr=Red Bank Road, Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_2"></a></div>
+								
+								
 								<div class="info-title">Phone</div>
 								<div class="related-info">(530) 355 2284</div>
+								
+								
 								<a href="#" class="open-info-box visting btn btn-large">Thinking of Visiting?</a>
 							</div>
-							<div class="span10 info-box">
+
+
+
+							<div class="span10 info-box" data-box="post_id_1">
 								<div class="info-box-content">
 									<span class="close-box"><a href="#">X</a></span>
-									<div class="see-map">
-										<img src="http://maps.googleapis.com/maps/api/staticmap?center=Rio Street, Red Bluff, Ca&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRio Street, Red Bluff, Ca&sensor=false" alt="Map" class="map">
+
+										<img src="http://maps.googleapis.com/maps/api/staticmap?center=Rio Street, Red Bluff, Ca 96080&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRio Street, Red Bluff, Ca&sensor=false" alt="Map" class="map">
 										<a href="http://maps.google.com/maps?saddr=&daddr=Rio Street, Red Bluff, Ca 96080">Get Directions</a>
-									</div>
+
+								</div>
+							</div>
+							
+							<div class="span10 info-box" data-box="post_id_2">
+								<div class="info-box-content">
+									<span class="close-box"><a href="#">X</a></span>
+
+										<img src="http://maps.googleapis.com/maps/api/staticmap?center=Red Bank Road, Red Bluff, CA 96080&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRed Bank Road, Red Bluff, CA 96080&sensor=false" alt="Map" class="map">
+										<a href="http://maps.google.com/maps?saddr=&daddr=Red Bank Road, Red Bluff, CA 96080">Get Directions</a>
+
+								</div>
+							</div>							
+
+
+
+
+							<div class="span10 info-box" id="visiting_box">
+								<div class="info-box-content">
+									<span class="close-box"><a href="#">X</a></span>
 									<div class="visiting-info">
 										<p class="sudo-title">Thinking of visiting?<br>
 										Here’s what you can expect.</p>
@@ -32,6 +63,7 @@
 									</div>
 								</div>
 							</div>
+							
 						</div>
 					</div><!-- .hero-content -->
 						<div id="news-feed">
@@ -53,14 +85,14 @@
 					
 					
 				</section>
-
+				<div id="events-anchor"></div>
 				<section id="page">
+					
 			
 					<h4>Upcoming Events</h4>
 				
-						<article id="events">
-							<?php echo do_shortcode( '[events_list]' ); ?>
-						</article>
+						<?php echo do_shortcode( '[events_list]' ); ?>
+					
 					<hr>
 					<article id="free-thinking" class="span16">
 						<h4><a href="<?php bloginfo('url'); ?>/category/free-thinking"><span>Free Thinking</span></a></h4>

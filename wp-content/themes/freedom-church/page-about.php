@@ -23,9 +23,6 @@ get_header(); ?>
 			</div>
 
 			<script>
-			  jQuery(function () {
-			    jQuery('#myTab a:last').tab('show');
-			  })
 			
 			jQuery('#myTab a').click(function (e) {
 			  e.preventDefault();

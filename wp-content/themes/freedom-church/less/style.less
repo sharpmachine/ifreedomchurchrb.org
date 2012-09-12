@@ -32,7 +32,7 @@ h2.tagline
 	line-height: 50px;
 	text-transform: none;
 	.istok;
-	font-size: 46px;
+	font-size: 42px;
 	color: @blueDark;
 }
 
@@ -112,6 +112,22 @@ a.visting
 	}
 }
 
+a.see-map-icon
+{
+	width:26px;
+	height:26px;
+	display: block;
+	background: url(../img/see-map.png) no-repeat;
+}
+
+a.get-directions-icon
+{
+	width:26px;
+	height:26px;
+	display: block;
+	background: url(../img/get-directions.png) no-repeat;
+}
+
 .map
 {
 	border: solid 10px @white;
@@ -120,7 +136,6 @@ a.visting
 .visiting-info
 {
 	padding: 20px 30px;
-	display: none;
 	
 	p
 	{
@@ -211,6 +226,18 @@ a.visting
 	}
 }
 
+#navigation li.not-active a
+{
+	background-color: transparent;
+	color: @gray;
+	
+	&:hover
+	{
+		color: @green;
+		background-color: @white;
+	}
+}
+
 #navigation-shadow
 {
 	width: 245px;
@@ -293,7 +320,7 @@ body.logged-in #social-media
 		
 		img
 		{
-			border: 12px solid @blue
+			border: 6px solid @blue
 		}
 		
 	}
@@ -393,7 +420,17 @@ footer
 		float: left;
 		.oswald-book;
 		font-size: 18px;
-		color: @grayLighter;
+		
+		a
+		{
+			color: @grayLighter;
+			
+			&:hover
+			{
+				color: @blue;
+				text-decoration: none;
+			}
+		}
 	}
 }
 

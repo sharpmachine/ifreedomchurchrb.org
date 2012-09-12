@@ -4198,7 +4198,7 @@ h2.tagline {
   text-transform: none;
   font-family: 'Istok Web', sans-serif;
   font-weight: 400;
-  font-size: 46px;
+  font-size: 42px;
   color: #0c3551;
 }
 #church-info {
@@ -4278,12 +4278,23 @@ a.visting {
   font-family: Helvetica, Arial, sans-serif;
   color: #2fb81b;
 }
+a.see-map-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+  background: url(../img/see-map.png) no-repeat;
+}
+a.get-directions-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+  background: url(../img/get-directions.png) no-repeat;
+}
 .map {
   border: solid 10px #ffffff;
 }
 .visiting-info {
   padding: 20px 30px;
-  display: none;
 }
 .visiting-info p {
   font-family: 'Istok Web', sans-serif;
@@ -4350,6 +4361,14 @@ a.visting {
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
   border-radius: 20px;
+}
+#navigation li.not-active a {
+  background-color: transparent;
+  color: #999999;
+}
+#navigation li.not-active a:hover {
+  color: #339933;
+  background-color: #ffffff;
 }
 #navigation-shadow {
   width: 245px;
@@ -4435,7 +4454,7 @@ body.logged-in #social-media {
   margin-left: 0;
 }
 #events .event-image img {
-  border: 12px solid #2892d0;
+  border: 6px solid #2892d0;
 }
 #events .sub-title {
   margin-top: 5px;
@@ -4514,7 +4533,13 @@ footer {
   font-weight: 300;
   text-transform: uppercase;
   font-size: 18px;
+}
+#ticker-container .testimonies-title a {
   color: #c1bfbf;
+}
+#ticker-container .testimonies-title a:hover {
+  color: #2892d0;
+  text-decoration: none;
 }
 /* liScroll styles */
 .tickercontainer {

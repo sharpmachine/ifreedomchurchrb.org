@@ -17,27 +17,27 @@ jQuery(document).ready(function($) {
 });
 
 jQuery(document).ready(function($) {
-	$("a.open-info-box").click(function(){
-		$(".info-box,.see-map").fadeOut();
-		$(".info-box,.visiting-info").fadeToggle();
-	});	
-	$("a.open-map").click(function(){
-		$(".info-box,.visiting-info").fadeOut();
-		$(".info-box,.see-map").fadeToggle();
+
+	$("a.open-info-box").click(function() {
+		$(".info-box, .get-directions-icon").hide();	
+		$(".see-map-icon").show();
+		$("#visiting_box").fadeIn();				
 	});
 	
+	$(".see-map-icon").click(function() {
+		var box_id = $(this).data("box");		
+		$(".info-box, .get-directions-icon").hide();	
+		$(".see-map-icon").show();				
+		$(".info-box[data-box='" + box_id + "']").fadeIn();
+		$(".get-directions-icon[data-box='" + box_id + "']").show();
+		$(this).hide();		
+	});
+
 	$(".close-box").click(function(){
-		$(".info-box").fadeOut();
+		$(".info-box, .get-directions-icon").hide();	
+		$(".see-map-icon").show();
 	});
 });
-
-
-
-
-
-
-
-
 
 
 
