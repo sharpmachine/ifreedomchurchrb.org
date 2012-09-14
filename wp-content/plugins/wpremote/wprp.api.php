@@ -45,6 +45,12 @@ foreach( $actions as $action => $value ) {
 
 		break;
 
+		case 'upgrade_core' :
+
+			$actions[$action] = _wprp_upgrade_core();
+
+		break;
+
 		case 'get_plugins' :
 
 			$actions[$action] = _wprp_supports_plugin_upgrade() ? _wprp_get_plugins() : 'not-implemented';
@@ -87,7 +93,12 @@ foreach( $actions as $action => $value ) {
 		// get site info
 		case 'get_site_info' :
 		
-			$actions[$action] = array( 'site_url' => get_site_url(), 'home_url' => get_home_url(), 'admin_url' => get_admin_url(),  );
+			$actions[$action] = array( 
+				'site_url' => get_site_url(), 
+				'home_url' => get_home_url(), 
+				'admin_url' => get_admin_url(),
+				'backups' => _wprp_get_backups_info() 
+			);
 		
 		break;
 
