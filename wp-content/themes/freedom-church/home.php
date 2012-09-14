@@ -8,58 +8,50 @@
 								<h2>Red Bluff, Ca</h2>
 								<div class="info-title">Meeting Times</div>
 								
-								
-								<div class="sub-title">Mondays 7pm</div>
-								<div class="related-info">Rio Street Red Bluff, CA <a href="#" class="see-map-icon" data-box="post_id_1"></a><a href="http://maps.google.com/maps?saddr=&daddr=Rio Street Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_1"></a></div>
-								
-								
-								
-								<div class="sub-title">Thursdays 7pm</div>
-								<div class="related-info">Red Bank Road, Red Bluff, CA <a href="#" class="see-map-icon" data-box="post_id_2"></a><a href="http://maps.google.com/maps?saddr=&daddr=Red Bank Road, Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_2"></a></div>
+								<?php while(the_repeater_field('meeting_time','option')): ?>
+									<div class="sub-title"><?php the_sub_field('meeting_day'); ?> <?php the_sub_field('meeting_start_time'); ?></div>
+									<div class="related-info"><?php the_sub_field('meeting_address'); ?></div>
+									<a href="#" class="see-map-icon" data-box="<?php the_sub_field('meeting_address'); ?>"></a>
+									<a href="http://maps.google.com/maps?saddr=&daddr=<?php the_sub_field('meeting_address'); ?>" class="get-directions-icon" style="display:none; " data-box="<?php the_sub_field('meeting_address'); ?>"></a>
+								<?php endwhile; ?>
 								
 								
-								<div class="info-title">Phone</div>
-								<div class="related-info">(530) 355 2284</div>
 								
+														
+								<!-- <div class="sub-title">Mondays 7pm</div>
+															<div class="related-info">Rio Street Red Bluff, CA</div>
+															<a href="#" class="see-map-icon" data-box="post_id_1"></a><a href="http://maps.google.com/maps?saddr=&daddr=Rio Street Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_1"></a>
+																	
+															<div class="sub-title">Thursdays 7pm</div>
+															<div class="related-info">Red Bank Road, Red Bluff, CA</div>
+															<a href="#" class="see-map-icon" data-box="post_id_2"></a><a href="http://maps.google.com/maps?saddr=&daddr=Red Bank Road, Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_2"></a>	 -->						
 								
-								<a href="#" class="open-info-box visting btn btn-large">Thinking of Visiting?</a>
-							</div>
-
-
-
-							<div class="span10 info-box" data-box="post_id_1">
-								<div class="info-box-content">
-									<span class="close-box"><a href="#">X</a></span>
-
-										<img src="http://maps.googleapis.com/maps/api/staticmap?center=Rio Street, Red Bluff, Ca 96080&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRio Street, Red Bluff, Ca&sensor=false" alt="Map" class="map">
-										<a href="http://maps.google.com/maps?saddr=&daddr=Rio Street, Red Bluff, Ca 96080">Get Directions</a>
-
-								</div>
+								<div class="info-title clearfix">Phone</div>
+								<div class="related-info"><?php the_field('phone_number', 'option'); ?></div>
+									
+								<a href="#" class="open-info-box visting btn btn-large"><?php the_field('info_box_button_label', 'option'); ?></a>
 							</div>
 							
-							<div class="span10 info-box" data-box="post_id_2">
+							
+							<?php while(the_repeater_field('meeting_time','option')): ?>
+							<div class="span10 info-box" data-box="<?php the_sub_field('meeting_address'); ?>">
 								<div class="info-box-content">
 									<span class="close-box"><a href="#">X</a></span>
-
-										<img src="http://maps.googleapis.com/maps/api/staticmap?center=Red Bank Road, Red Bluff, CA 96080&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7CRed Bank Road, Red Bluff, CA 96080&sensor=false" alt="Map" class="map">
-										<a href="http://maps.google.com/maps?saddr=&daddr=Red Bank Road, Red Bluff, CA 96080">Get Directions</a>
-
+									<div class="see-map">
+										<img src="http://maps.googleapis.com/maps/api/staticmap?center=<?php the_sub_field('meeting_address'); ?>&zoom=16&size=330x200&maptype=roadmap&markers=color:red%7Ccolor:red%7Clabel:C%7C<?php the_sub_field('meeting_address'); ?>&sensor=false" alt="Map" class="map">
+										<a href="http://maps.google.com/maps?saddr=&daddr=<?php the_sub_field('meeting_address'); ?>">Get Directions</a>
+									</div><!-- .see-map -->
 								</div>
-							</div>							
-
-
-
+							</div>
+							<?php endwhile; ?>
 
 							<div class="span10 info-box" id="visiting_box">
 								<div class="info-box-content">
 									<span class="close-box"><a href="#">X</a></span>
 									<div class="visiting-info">
-										<p class="sudo-title">Thinking of visiting?<br>
-										Here’s what you can expect.</p>
+										<p class="sudo-title"><?php the_field('info_box_title', 'option'); ?></p>
 									
-										<p>Visiting a church for the first time can be nerve-racking. But having an idea of what to expect can help! We meet as house church where we worship, share testimonies, have teaching and pray for each other. We love connecting with people and the intimacy small groups worshipping together creates.</p>
-
-										<p>Our aim is to equip and activate our house churches to serve in the community, demonstrating the gospel with signs &amp; wonders to those they meet, thereby fulfilling the Ephesians 4 'equipping of the saints for the work of ministry'.</p>
+										<?php the_field('info_box_content', 'option'); ?>
 									</div>
 								</div>
 							</div>

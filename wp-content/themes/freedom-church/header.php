@@ -66,8 +66,8 @@
 						<?php wp_nav_menu( array( 'theme_location' => 'primary', 'container' => false, 'menu_class' => 'nav', 'walker' => new Bootstrap_Menu_Walker ) ); ?>
 						 <a href="http://twitter.github.com/bootstrap" target="_blank" style="display:block; text-align:center;">Bootstrap Docs</a>
 							<div id="social-media">
-								<a href="http://www.facebook.com/ifreedomchurch" title="Like us on Facebook"><img src="<?php bloginfo('template_directory'); ?>/img/facebook.png" width="36" height="36" alt="Facebook"></a>
-								<a href="http://twitter.com/#!/ifreedomchurch" title="Follow us on Twitter"><img src="<?php bloginfo('template_directory'); ?>/img/twitter.png" width="36" height="36" alt="Twitter"></a>
+								<a href="<?php the_field('facebook_url', 'option'); ?>" title="Like us on Facebook"><img src="<?php bloginfo('template_directory'); ?>/img/facebook.png" width="36" height="36" alt="Facebook"></a>
+								<a href="<?php the_field('twitter_url', 'option'); ?>" title="Follow us on Twitter"><img src="<?php bloginfo('template_directory'); ?>/img/twitter.png" width="36" height="36" alt="Twitter"></a>
 							</div>
 					</section>
 				</div>

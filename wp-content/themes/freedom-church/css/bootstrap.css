@@ -4204,9 +4204,14 @@ h2.tagline {
 #church-info {
   height: 542px;
 }
+#church-info .related-info {
+  width: 243px;
+  float: left;
+}
 .service-info {
   margin-left: 0;
-  padding-top: 30px;
+  /*padding-top: 30px;*/
+
   font-family: 'Istok Web', sans-serif;
   font-weight: 400;
   color: #333333;
@@ -4270,7 +4275,6 @@ a.visting {
 }
 .see-map {
   padding: 45px 20px;
-  display: none;
 }
 .see-map a {
   display: block;
@@ -4278,16 +4282,19 @@ a.visting {
   font-family: Helvetica, Arial, sans-serif;
   color: #2fb81b;
 }
-a.see-map-icon {
-  width: 26px;
-  height: 26px;
-  display: block;
-  background: url(../img/see-map.png) no-repeat;
-}
+a.see-map-icon,
 a.get-directions-icon {
   width: 26px;
   height: 26px;
   display: block;
+  float: left;
+  position: relative;
+  top: -5px;
+}
+a.see-map-icon {
+  background: url(../img/see-map.png) no-repeat;
+}
+a.get-directions-icon {
   background: url(../img/get-directions.png) no-repeat;
 }
 .map {
