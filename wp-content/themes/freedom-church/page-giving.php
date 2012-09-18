@@ -52,7 +52,7 @@
 				</div>
 			</div>
 			
-			<a href="http://greaterworkshealing.com/wp-content/uploads/2011/06/cards.png"><img class="alignleft size-full wp-image-230 feature-box-img" title="Card Logos" src="http://greaterworkshealing.com/wp-content/uploads/2011/06/cards.png" alt="Card Logos" width="144" height="21" /></a>All payments are process by Paypal<img class="alignleft size-full wp-image-235 feature-box-img" title="Paypal Logo" src="http://greaterworkshealing.com/wp-content/uploads/2011/06/paypal.png" alt="Paypal Logo" width="74" height="21" />
+			<img title="Card Logos" src="<?php bloginfo('template_directory'); ?>/img/cards.png" alt="Card Logos" width="144" height="21" /> <span class="paypal-notice">All payments are process by</span> <img title="Paypal Logo" src="<?php bloginfo('template_directory'); ?>/img/paypal.png" alt="Paypal Logo" width="74" height="21" />
 			
 		</section><!-- #page -->
 

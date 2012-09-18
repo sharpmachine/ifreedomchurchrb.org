@@ -4670,6 +4670,14 @@ footer {
 #monthly-parnter a.btn {
   margin-right: 10px;
 }
+.paypal-notice {
+  position: relative;
+  top: 3px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  text-transform: uppercase;
+}
 /* liScroll styles */
 .tickercontainer {
   /* the outer div with the black border */
