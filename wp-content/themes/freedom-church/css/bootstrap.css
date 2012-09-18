@@ -4621,6 +4621,7 @@ footer {
   color: #2892d0;
   text-decoration: none;
 }
+/*..........................About page*/
 .leader {
   margin-top: 25px;
   padding: 50px 0;
@@ -4644,6 +4645,30 @@ footer {
   float: left;
   margin: 0;
   padding: 0;
+}
+/*..........................Giving page*/
+#one-time-donations {
+  height: 40px;
+  margin: 40px 0;
+}
+#one-time-donations a.btn {
+  margin-right: 10px;
+}
+.feature-box {
+  height: 130px;
+  margin-bottom: 40px;
+  border-top: 1px solid #e6e6e6;
+  border-bottom: 1px solid #e6e6e6;
+}
+.feature-box .feature-box-info {
+  padding: 15px 0 0 10px;
+}
+#monthly-parnter {
+  height: 40px;
+  margin-bottom: 40px;
+}
+#monthly-parnter a.btn {
+  margin-right: 10px;
 }
 /* liScroll styles */
 .tickercontainer {
