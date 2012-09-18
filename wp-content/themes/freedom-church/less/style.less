@@ -2,11 +2,90 @@
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
 
+
+.black
+{
+	color: @black;
+}
+
+.gray
+{
+	color: @grayLighter;
+}
+
+.big-bottom
+{
+	margin-bottom: 35px;
+}
+
 h4
 {
 	.oswald-book;
 	font-size: 18px;
 	color: @blue;
+}
+
+.page-header
+{
+	width: 100%;
+	background-color: @blue;
+	
+	.container
+	{
+		padding-left: 560px;
+	}
+}
+
+.tabbys
+{
+	border-bottom: 1px solid @grayLight;
+	
+	.nav
+	{
+		margin-bottom: -10px;
+	}
+	
+	.nav-tabs
+	{
+		border: none;
+		
+		/*li.active
+				{
+					background-color: @grayLight;
+				}*/
+	}
+	
+	.nav-tabs > li > a {
+	width: 130px;
+	.oswald-book;
+	color: @gray;
+	font-size: 18px;
+	padding: 12px 15px 21px 50px;
+	line-height: 18px;
+	border: none;
+	
+		&:hover
+		{
+			background-color: transparent;
+			color: @green;
+			border: none;
+			border-radius: 0;
+		}
+	}
+	
+	.nav-tabs > .active > a, .nav-tabs > .active > a:hover {
+	color: @green;
+	background: url(../img/tab-bg.png) transparent;
+	border: none;
+	border-bottom-color: transparent;
+	cursor: default;
+	margin-right: 0;
+	}
+	
+	.container
+	{
+		padding-left: 462px;
+	}
 }
 
 .hero
@@ -76,6 +155,8 @@ h2.tagline
 
 .related-info
 {
+	font-size: 14px;
+	
 	a img
 	{
 		display: inline-block;
@@ -344,7 +425,7 @@ body.logged-in #social-media
 	.related-info
 	{
 		margin-bottom: 15px;
-		color: grayDark;
+		color: @grayDark;
 	}
 }
 
@@ -361,6 +442,13 @@ body.logged-in #social-media
 {
 	margin: 40px 0 0 0;
 	float: none;
+	font-size: 14px;
+	
+	p
+	{
+		font-size: 14px;
+		color: @grayDark;
+	}
 	
 	h4
 	{
@@ -368,7 +456,6 @@ body.logged-in #social-media
 		padding-bottom: 20px;
 		margin: 0 auto 15px auto;
 		background: url(../img/sb-arrow.png) 60px 27px no-repeat;
-		
 		overflow: visible;
 		
 		span
@@ -450,6 +537,43 @@ footer
 				text-decoration: none;
 			}
 		}
+	}
+}
+
+.leader
+{
+	margin-top: 25px;
+	padding: 50px 0;
+	border-top: 1px solid @grayLight;
+	
+	img
+	{
+		margin-right: 50px;
+		display: block;
+		float: left;
+		border: 4px solid @blue;
+	}
+	
+	.bio
+	{
+		width: 340px;
+		float: left;
+		
+		p:first-child
+		{
+			color: @black;
+		}
+	}
+}
+
+.sof-infographic
+{
+	img
+	{
+		display: block;
+		float: left;
+		margin: 0;
+		padding: 0;
 	}
 }
 

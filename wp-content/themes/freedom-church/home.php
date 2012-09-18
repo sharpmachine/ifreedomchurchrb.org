@@ -1,5 +1,6 @@
 <?php get_header(); ?>
-				
+		<div class="container">
+			<div class="row">
 				<section class="hero">
 					<div class="hero-content">
 						<div id="church-info">

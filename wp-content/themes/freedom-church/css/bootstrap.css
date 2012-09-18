@@ -173,9 +173,9 @@ textarea {
 body {
   margin: 0;
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 18px;
-  color: #666666;
+  color: #999999;
   background-color: #ffffff;
 }
 a {
@@ -503,12 +503,12 @@ a:hover {
 p {
   margin: 0 0 9px;
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 18px;
 }
 p small {
-  font-size: 12px;
-  color: #e6e6e6;
+  font-size: 10px;
+  color: #999999;
 }
 .lead {
   margin-bottom: 18px;
@@ -523,9 +523,9 @@ h4,
 h5,
 h6 {
   margin: 0;
-  font-family: inherit;
-  font-weight: bold;
-  color: inherit;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  color: #2892d0;
   text-rendering: optimizelegibility;
 }
 h1 small,
@@ -538,7 +538,7 @@ h6 small {
   color: #e6e6e6;
 }
 h1 {
-  font-size: 30px;
+  font-size: 42px;
   line-height: 36px;
 }
 h1 small {
@@ -552,7 +552,7 @@ h2 small {
   font-size: 18px;
 }
 h3 {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 27px;
 }
 h3 small {
@@ -564,26 +564,26 @@ h6 {
   line-height: 18px;
 }
 h4 {
-  font-size: 14px;
+  font-size: 18px;
 }
 h4 small {
   font-size: 12px;
 }
 h5 {
-  font-size: 12px;
+  font-size: 14px;
 }
 h6 {
-  font-size: 11px;
-  color: #e6e6e6;
+  font-size: 12px;
+  color: #666666;
   text-transform: uppercase;
 }
 .page-header {
-  padding-bottom: 17px;
-  margin: 18px 0;
-  border-bottom: 1px solid #c1bfbf;
+  padding: 50px 0;
+  margin: 0 0;
 }
 .page-header h1 {
   line-height: 1;
+  color: #ffffff;
 }
 ul,
 ol {
@@ -662,13 +662,15 @@ abbr.initialism {
 blockquote {
   padding: 0 0 0 15px;
   margin: 0 0 18px;
+  font-family: Georgia, "Times New Roman", Times, serif;
   border-left: 5px solid #c1bfbf;
 }
 blockquote p {
   margin-bottom: 0;
-  font-size: 16px;
-  font-weight: 300;
-  line-height: 22.5px;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: italic;
+  font-size: 14px;
+  color: #333333;
 }
 blockquote small {
   display: block;
@@ -711,7 +713,7 @@ code,
 pre {
   padding: 0 3px 2px;
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: 13px;
+  font-size: 11px;
   color: #666666;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -727,7 +729,7 @@ pre {
   display: block;
   padding: 8.5px;
   margin: 0 0 9px;
-  font-size: 12.950000000000001px;
+  font-size: 11.100000000000001px;
   line-height: 18px;
   word-break: break-all;
   word-wrap: break-word;
@@ -766,7 +768,7 @@ legend {
   width: 100%;
   padding: 0;
   margin-bottom: 27px;
-  font-size: 21px;
+  font-size: 18px;
   line-height: 36px;
   color: #666666;
   border: 0;
@@ -781,7 +783,7 @@ input,
 button,
 select,
 textarea {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: normal;
   line-height: 18px;
 }
@@ -805,7 +807,7 @@ select,
   height: 18px;
   padding: 4px;
   margin-bottom: 9px;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 18px;
   color: #999999;
   background-color: #ffffff;
@@ -2295,7 +2297,7 @@ button.close {
   font-family: 'Oswald', sans-serif;
   font-weight: 300;
   text-transform: uppercase;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 18px;
   *line-height: 20px;
   color: #2fb81b;
@@ -2386,7 +2388,7 @@ button.close {
 }
 .btn-large {
   padding: 6px 12px;
-  font-size: 18px;
+  font-size: 16px;
   line-height: normal;
   -webkit-border-radius: 15px;
   -moz-border-radius: 15px;
@@ -2397,7 +2399,7 @@ button.close {
 }
 .btn-small {
   padding: 5px 9px;
-  font-size: 12px;
+  font-size: 10px;
   line-height: 16px;
 }
 .btn-small [class^="icon-"] {
@@ -2405,7 +2407,7 @@ button.close {
 }
 .btn-mini {
   padding: 2px 6px;
-  font-size: 12px;
+  font-size: 10px;
   line-height: 14px;
 }
 .btn-primary,
@@ -3770,7 +3772,7 @@ a.thumbnail:hover {
 }
 .label,
 .badge {
-  font-size: 11.844px;
+  font-size: 10.152px;
   font-weight: bold;
   line-height: 14px;
   color: #ffffff;
@@ -4170,12 +4172,71 @@ a.badge:hover {
 /*
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
+.black {
+  color: #333333;
+}
+.gray {
+  color: #c1bfbf;
+}
+.big-bottom {
+  margin-bottom: 35px;
+}
 h4 {
   font-family: 'Oswald', sans-serif;
   font-weight: 300;
   text-transform: uppercase;
   font-size: 18px;
   color: #2892d0;
+}
+.page-header {
+  width: 100%;
+  background-color: #2892d0;
+}
+.page-header .container {
+  padding-left: 560px;
+}
+.tabbys {
+  border-bottom: 1px solid #e6e6e6;
+}
+.tabbys .nav {
+  margin-bottom: -10px;
+}
+.tabbys .nav-tabs {
+  border: none;
+  /*li.active
+				{
+					background-color: @grayLight;
+				}*/
+
+}
+.tabbys .nav-tabs > li > a {
+  width: 130px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  color: #999999;
+  font-size: 18px;
+  padding: 12px 15px 21px 50px;
+  line-height: 18px;
+  border: none;
+}
+.tabbys .nav-tabs > li > a:hover {
+  background-color: transparent;
+  color: #339933;
+  border: none;
+  border-radius: 0;
+}
+.tabbys .nav-tabs > .active > a,
+.tabbys .nav-tabs > .active > a:hover {
+  color: #339933;
+  background: url(../img/tab-bg.png) transparent;
+  border: none;
+  border-bottom-color: transparent;
+  cursor: default;
+  margin-right: 0;
+}
+.tabbys .container {
+  padding-left: 462px;
 }
 .hero {
   width: 1200px;
@@ -4230,6 +4291,9 @@ h2.tagline {
 .sub-title {
   font-size: 18px;
   line-height: 30px;
+}
+.related-info {
+  font-size: 14px;
 }
 .related-info a img {
   display: inline-block;
@@ -4469,7 +4533,7 @@ body.logged-in #social-media {
 }
 #events .related-info {
   margin-bottom: 15px;
-  color: grayDark;
+  color: #666666;
 }
 .single-event-image img {
   position: relative;
@@ -4478,6 +4542,11 @@ body.logged-in #social-media {
 #free-thinking {
   margin: 40px 0 0 0;
   float: none;
+  font-size: 14px;
+}
+#free-thinking p {
+  font-size: 14px;
+  color: #666666;
 }
 #free-thinking h4 {
   width: 127px;
@@ -4551,6 +4620,30 @@ footer {
 #ticker-container .testimonies-title a:hover {
   color: #2892d0;
   text-decoration: none;
+}
+.leader {
+  margin-top: 25px;
+  padding: 50px 0;
+  border-top: 1px solid #e6e6e6;
+}
+.leader img {
+  margin-right: 50px;
+  display: block;
+  float: left;
+  border: 4px solid #2892d0;
+}
+.leader .bio {
+  width: 340px;
+  float: left;
+}
+.leader .bio p:first-child {
+  color: #333333;
+}
+.sof-infographic img {
+  display: block;
+  float: left;
+  margin: 0;
+  padding: 0;
 }
 /* liScroll styles */
 .tickercontainer {
