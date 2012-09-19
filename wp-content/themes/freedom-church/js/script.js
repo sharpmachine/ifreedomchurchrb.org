@@ -39,6 +39,9 @@ jQuery(document).ready(function($) {
 	});
 });
 
+jQuery(document).ready(function($) { // when the document becomes ready for manipulation
+  $(".gallery-icon a").removeAttr('data-original-title'); // removes title from all things that have title
+});
 
 
 
