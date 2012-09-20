@@ -15,7 +15,7 @@
 <?php if ( have_posts() ) while ( have_posts() ) : the_post(); ?>
 
 				<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-					<h1 class="entry-title"><?php the_title(); ?></h1>
+					<h2 class="entry-title"><?php the_title(); ?></h2>
 
 					<div class="entry-meta">
 						<?php smm_posted_on(); ?>
@@ -48,7 +48,7 @@
 					</div><!-- .entry-utility -->
 				</div><!-- #post-## -->
 
-
+				<h3>Leave us a comment</h3><br>
 				<?php comments_template( '', true ); ?>
 
 <?php endwhile; // end of the loop. ?>

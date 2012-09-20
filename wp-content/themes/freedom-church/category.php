@@ -14,7 +14,7 @@
 </section>
 <div class="container">
 	<div class="row">
-		<section id="page">
+		<section id="page" class="span8">
 
 			<?php
 				$category_description = category_description();

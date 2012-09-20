@@ -4593,7 +4593,8 @@ body.logged-in #social-media {
   border-radius: 15px;
 }
 #ft-content p {
-  padding: 35px 70px 10px 70px;
+  margin: 0;
+  padding: 35px 70px 35px;
   font-family: Georgia, "Times New Roman", Times, serif;
   font-style: italic;
 }
@@ -4817,114 +4818,10 @@ form input[type="submit"]:hover {
 .wpcf7 br {
   display: none;
 }
-/*form.wpcf7-form,
-form#em-booking-form
-	{
-		background-color: @grayLight;
-		
-		p
-		{
-			height: 30px;
-			margin-bottom: 20px;
-		}
-		
-		label
-		{
-			display: block;
-			float: left;
-			line-height: 30px;
-			width: 80px;
-		}
-		
-		input[type=text],
-		textarea,
-		select
-		{
-			float: left;
-			margin: 0;
-		}
-		
-		input[type=text]
-		{
-			width: 235px;
-			height: 30px;
-			padding: 0 5px;
-		}
-		
-		select.em-ticket-select
-		{
-			width: 55px;
-		}
-		
-		select
-		{
-			width: 247px;
-			height: 30px;
-		}
-		
-		textarea
-		{
-			width: 235px;
-			height: 160px;
-		}
-		
-		input[type=submit]
-		{
-			margin: 15px 0 0 80px;
-			font-size: 18px;
-			font-weight: 400;
-			color: #fff;
-			border: none;
-			text-transform: uppercase;
-		}
-		
-		br
-		{
-			display: none;
-		}
-	}
-
-	
-div.wpcf7-validation-errors,
-div.wpcf7-mail-sent-ng,
-div.wpcf7-mail-sent-ok
-{
-	border: none !important;
-	position: relative;
-	top: 8px;
-	left: 15px;
-	text-transform: uppercase;
+form#searchform {
+  padding: 40px 0 0 0;
+  background-color: transparent;
 }
-
-div.wpcf7-validation-errors
-{
-	color: black;
-}
-
-div.wpcf7-mail-sent-ng
-{
-	color: red;
-}
-
-div.wpcf7 img.ajax-loader
-{
-	margin-top: -5px;
-}
-
-span.wpcf7-not-valid-tip
-{
-	border: none !important;
-	margin-left: 10px;
-	background: none !important;
-	font-weight: bold;
-	text-transform: uppercase;
-
-}
-
-select
-{
-	border: 1px solid #BBBBBB;
-}*/
 /*......................testimonies ticker */
 .tickercontainer {
   /* the outer div with the black border */
@@ -5011,6 +4908,35 @@ img.alignright,
 img.aligncenter {
   margin-bottom: 12px;
 }
+.entry-meta {
+  margin-bottom: 10px;
+  /*.oswald-book;*/
+
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+}
+.entry-utility {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  /*.istok;*/
+
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  text-transform: lowercase;
+  font-size: 14px;
+  border-bottom: 1px solid #e6e6e6;
+}
+/*#global-nav li, #global-nav h4 
+{
+	color: red !important;
+	
+	h4
+	{
+		color: red !important;
+	}
+}*/
 /* =Comments
 -------------------------------------------------------------- */
 #comments {
