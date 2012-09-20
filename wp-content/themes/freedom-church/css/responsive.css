@@ -138,6 +138,10 @@
 }
 */
 @media (min-width: 1024px) and (max-width: 1024px) {
+  .wrapper,
+  .page-header {
+    width: 1024px;
+  }
   .hero {
     width: 1024px;
     left: -27px;

@@ -1,4 +1,5 @@
 <?php get_header(); ?>
+
 		<div class="container">
 			<div class="row">
 				<section class="hero">
@@ -101,4 +102,5 @@
 						
 		
 				</section><!-- #page -->
+
 <?php get_footer(); ?>

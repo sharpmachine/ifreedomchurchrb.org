@@ -62,7 +62,6 @@ get_header(); ?>
 			  jQuery(this).tab('show');
 			})
 			</script>
-			
 		</section><!-- #page -->
 
 <?php get_footer(); ?>

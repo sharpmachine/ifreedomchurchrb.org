@@ -4174,6 +4174,17 @@ a.badge:hover {
 /*
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
+body {
+  background: url(../img/tile.png);
+}
+.wrapper {
+  width: 1200px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  -webkit-box-shadow: 0 0 15px #999999;
+  -moz-box-shadow: 0 0 15px #999999;
+  box-shadow: 0 0 15px #999999;
+}
 .black {
   color: #333333;
 }
@@ -4194,12 +4205,18 @@ h4 {
   color: #2892d0;
 }
 .page-header {
-  width: 100%;
+  width: 1200px;
   background-color: #2892d0;
 }
 .page-header h1 {
   width: 670px;
   margin-left: 280px;
+}
+.page-header h1 a {
+  color: #ffffff;
+}
+.page-header h1 a:hover {
+  text-decoration: none;
 }
 .tabbys {
   border-bottom: 1px solid #e6e6e6;
@@ -4243,9 +4260,8 @@ h4 {
   position: relative;
   left: -115px;
   background: url(../img/home-ph.jpg) no-repeat;
-  -webkit-box-shadow: 0 0 15px #999999;
-  -moz-box-shadow: 0 0 15px #999999;
-  box-shadow: 0 0 15px #999999;
+  /*.box-shadow;*/
+
 }
 .hero-content {
   width: 670px;
