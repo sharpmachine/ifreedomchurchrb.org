@@ -3562,13 +3562,15 @@ input[type="submit"].btn.btn-mini {
   display: block;
   visibility: visible;
   padding: 5px;
-  font-size: 11px;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
   opacity: 0;
   filter: alpha(opacity=0);
 }
 .tooltip.in {
-  opacity: 0.8;
-  filter: alpha(opacity=80);
+  opacity: 1;
+  filter: alpha(opacity=100);
 }
 .tooltip.top {
   margin-top: -2px;
@@ -3596,7 +3598,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 5px solid #333333;
+  border-left: 5px solid #ffffff;
 }
 .tooltip.bottom .tooltip-arrow {
   top: 0;
@@ -3612,18 +3614,21 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-right: 5px solid #333333;
+  border-right: 5px solid #ffffff;
 }
 .tooltip-inner {
-  max-width: 200px;
-  padding: 3px 8px;
-  color: #ffffff;
-  text-align: center;
+  max-width: 300px;
+  padding: 10px 15px;
+  color: #666666;
+  text-align: left;
   text-decoration: none;
-  background-color: #333333;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
+  background-color: #ffffff;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  -webkit-box-shadow: 0 0 15px #999999;
+  -moz-box-shadow: 0 0 15px #999999;
+  box-shadow: 0 0 15px #999999;
 }
 .tooltip-arrow {
   position: absolute;
@@ -3664,7 +3669,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-right: 5px solid #333333;
+  border-right: 5px solid #ffffff;
 }
 .popover.bottom .arrow {
   top: 0;
@@ -3680,7 +3685,7 @@ input[type="submit"].btn.btn-mini {
   margin-top: -5px;
   border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
-  border-left: 5px solid #333333;
+  border-left: 5px solid #ffffff;
 }
 .popover .arrow {
   position: absolute;
@@ -4254,14 +4259,15 @@ h4 {
   cursor: default;
   margin-right: 0;
 }
-.hero {
+.hero-home,
+.hero-ignite {
   width: 1200px;
-  height: 717px;
   position: relative;
   left: -115px;
+}
+.hero-home {
+  height: 717px;
   background: url(../img/home-ph.jpg) no-repeat;
-  /*.box-shadow;*/
-
 }
 .hero-content {
   width: 670px;
@@ -4438,10 +4444,12 @@ a.get-directions-icon {
   display: block;
   margin: 25px 0 0 65px;
 }
-#promote h4 {
-  display: inline-block;
+#promote h4.promote {
   margin: 15px 0 0 65px;
+}
+h4.promote {
   padding: 5px 10px;
+  display: inline-block;
   color: #ffffff;
   background-color: rgba(0, 0, 0, 0.5);
   -webkit-border-radius: 20px;
@@ -4762,6 +4770,79 @@ footer {
   -ms-transition: opacity 0.5s ease;
   -o-transition: opacity 0.5s ease;
   transition: opacity 0.5s ease;
+}
+/*.....................ignite page */
+.hero-ignite {
+  height: 730px;
+  padding-top: 20px;
+  background: url(../img/ignite-bg.jpg) no-repeat;
+}
+.hero-ignite p {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #2892d0;
+}
+.hero-ignite h4.promote {
+  margin-left: 60px;
+  position: relative;
+  top: -10px;
+}
+.ignite-copy {
+  height: 193px;
+  margin-bottom: 5px;
+  vertical-align: middle;
+  background: url(../img/dotted-line.png) no-repeat top left;
+}
+.ignite-copy .entry-content {
+  display: table;
+  height: 193px;
+}
+.ignite-copy .entry-content p {
+  display: table-cell;
+  vertical-align: middle;
+}
+.ignite-icons-wrapper {
+  height: 270px;
+  background: url(../img/dotted-line.png) repeat-y bottom left;
+}
+.ignite-icons-wrapper .ignite-icons {
+  height: 61px;
+  margin-bottom: 30px;
+  position: relative;
+  left: -30px;
+}
+.ignite-icons-wrapper img {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+.ignite-icons-wrapper a {
+  width: 60px;
+  height: 60px;
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+.ignite-connect-wrapper {
+  height: 40px;
+  padding: 20px 0 20px 20px;
+  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+.ignite-connect img {
+  margin-right: 10px;
+  display: block;
+  float: left;
+}
+.ignite-connect div.deets,
+.ignite-connect div.deets-link {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #333333;
 }
 /*.....................contact page */
 .contact-details {

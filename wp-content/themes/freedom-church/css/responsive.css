@@ -142,7 +142,8 @@
   .page-header {
     width: 1024px;
   }
-  .hero {
+  .hero-home,
+  .hero-ignite {
     width: 1024px;
     left: -27px;
   }

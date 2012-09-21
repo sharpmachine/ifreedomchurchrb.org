@@ -112,14 +112,18 @@ h4
 	}
 }
 
-.hero
+.hero-home,
+.hero-ignite
 {
 	width: 1200px;
-	height: 717px;
 	position: relative;
 	left: -115px;
+}
+
+.hero-home
+{
+	height: 717px;
 	background: url(../img/home-ph.jpg) no-repeat;
-	/*.box-shadow;*/
 }
 
 .hero-content
@@ -330,15 +334,19 @@ a.get-directions-icon
 		margin: 25px 0 0 65px;
 	}
 	
-	h4
+	h4.promote
 	{
-		display: inline-block;
 		margin: 15px 0 0 65px;
-		padding: 5px 10px;
-		color: @white;
-		background-color: rgba(0,0,0,0.5);
-		.border-radius(20px);
 	}
+}
+
+h4.promote
+{
+	padding: 5px 10px;
+	display: inline-block;
+	color: @white;
+	background-color: rgba(0,0,0,0.5);
+	.border-radius(20px);
 }
 
 #navigation li.not-active a
@@ -734,6 +742,108 @@ footer
 			.opacity(80);
 			.transition(opacity 0.5s ease);
 		}
+	}
+}
+
+/*.....................ignite page */
+.hero-ignite
+{
+	height: 730px;
+	padding-top: 20px;
+	background: url(../img/ignite-bg.jpg) no-repeat;
+	
+	p
+	{
+		.istok;
+		font-size: 14px;
+		color: @blue;
+	}
+	
+	h4.promote
+	{
+		margin-left: 60px;
+		position: relative;
+		top: -10px;
+	}
+}
+
+.ignite-copy
+{
+	height: 193px;
+	margin-bottom: 5px;
+	vertical-align: middle;
+	background: url(../img/dotted-line.png) no-repeat top left;
+	
+	.entry-content
+	{
+		display: table;
+		height: 193px;
+		
+		p
+		{
+			display: table-cell;
+			vertical-align: middle;
+		}
+		
+	}
+}
+
+.ignite-icons-wrapper
+{
+	height: 270px;
+	background: url(../img/dotted-line.png) repeat-y bottom left;
+	
+	.ignite-icons
+	{
+		height: 61px;
+		margin-bottom: 30px;
+		position: relative;
+		left: -30px;
+	}
+	
+	img
+	{
+		display: block;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+	}
+	
+	a
+	{
+		width: 60px;
+		height: 60px;
+		display: block;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+	}
+}
+
+.ignite-connect-wrapper
+{
+	height: 40px;
+	padding: 20px 0 20px 20px;
+	background-color: @white;
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.ignite-connect
+{
+
+	img
+	{
+		margin-right: 10px;
+		display: block;
+		float: left;
+	}
+	
+	div.deets,
+	div.deets-link
+	{
+		.istok;
+		font-size: 14px;
+		color: @black;
 	}
 }
 

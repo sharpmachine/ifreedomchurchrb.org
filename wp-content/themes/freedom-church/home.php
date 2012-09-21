@@ -2,7 +2,7 @@
 
 		<div class="container">
 			<div class="row">
-				<section class="hero">
+				<section class="hero-home">
 					<div class="hero-content">
 						<div id="church-info">
 							<h2 class="tagline"><?php bloginfo('description'); ?></h2>
@@ -15,18 +15,7 @@
 									<div class="related-info"><?php the_sub_field('meeting_address'); ?></div>
 									<a href="#" class="see-map-icon" data-box="<?php the_sub_field('meeting_address'); ?>"></a>
 									<a href="http://maps.google.com/maps?saddr=&daddr=<?php the_sub_field('meeting_address'); ?>" class="get-directions-icon" style="display:none; " data-box="<?php the_sub_field('meeting_address'); ?>"></a>
-								<?php endwhile; ?>
-								
-								
-								
-														
-								<!-- <div class="sub-title">Mondays 7pm</div>
-															<div class="related-info">Rio Street Red Bluff, CA</div>
-															<a href="#" class="see-map-icon" data-box="post_id_1"></a><a href="http://maps.google.com/maps?saddr=&daddr=Rio Street Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_1"></a>
-																	
-															<div class="sub-title">Thursdays 7pm</div>
-															<div class="related-info">Red Bank Road, Red Bluff, CA</div>
-															<a href="#" class="see-map-icon" data-box="post_id_2"></a><a href="http://maps.google.com/maps?saddr=&daddr=Red Bank Road, Red Bluff, CA 96080" class="get-directions-icon" style="display:none; " data-box="post_id_2"></a>	 -->						
+								<?php endwhile; ?>	
 								
 								<div class="info-title clearfix">Phone</div>
 								<div class="related-info"><?php the_field('phone_number', 'option'); ?></div>
@@ -74,7 +63,7 @@
 						</div>
 						<div id="promote">
 							<a href="<?php bloginfo('url'); ?>/ignite"><img src="<?php bloginfo('template_directory'); ?>/img/ignite-logo.png" width="230" height="92" alt="Ignite Logo"></a>
-							<h4>Youth Meets Every Thursday at 7pm</h4>
+							<h4 class="promote">Youth Meets Every Thursday at 7pm</h4>
 						</div>
 					
 					
