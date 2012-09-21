@@ -4740,10 +4740,19 @@ footer {
   background-color: #e6e6e6 !important;
   background-image: url(../img/tile.gif) !important;
 }
+#lightbox-image-details {
+  padding-top: 10px;
+}
 .imagecaption {
+  padding-top: 10px;
   font-family: 'Istok Web', sans-serif;
   font-weight: 400;
   font-size: 14px;
+}
+#lightbox-container-image-box {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
 }
 #lightbox-image-details-currentNumber {
   display: none !important;
@@ -4751,14 +4760,24 @@ footer {
 #lightbox-container-image-data-box {
   background: transparent !important;
 }
-/*#lightbox-nav-btnNext
-{
-	background: url(../img/ignite-logo.png) 100% 15% no-repeat !important;
-	display: block;
-	height: 704px;
-	background-position: 100% 15%;
-	background-repeat: no-repeat no-repeat;
-}*/
+#lightbox-nav-btnNext {
+  background: url(../img/next-photo.png) 100% 50% no-repeat !important;
+  display: block;
+  height: 704px;
+  background-position: 100% 50% !important;
+  background-repeat: no-repeat no-repeat;
+  position: relative !important;
+  right: 25px !important;
+}
+#lightbox-nav-btnPrev {
+  background: url(../img/prev-photo.png) 0% 50% no-repeat !important;
+  display: block;
+  height: 704px;
+  background-position: 0% 50% !important;
+  background-repeat: no-repeat no-repeat;
+  position: relative !important;
+  left: 25px !important;
+}
 /*.....................friends page */
 .friends {
   margin-bottom: 15px;

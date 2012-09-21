@@ -1,15 +1,7 @@
 <?php get_header(); ?>
 <section class="page-header">
 	<div class="container">
-		<?php if(get_field('page_heading')): ?>
-		<h1>
-		<?php the_field('page_heading'); ?>
-		</h1>
-		<?php else: ?>
-		<h1>
-			<?php the_title(); ?>
-		</h1>
-		<?php endif; ?>
+		<h1>Upcoming Events</h1>
 	</div>
 </section>
 <div class="container">
