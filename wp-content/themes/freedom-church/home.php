@@ -63,7 +63,7 @@
 						</div>
 						<div id="promote">
 							<a href="<?php bloginfo('url'); ?>/ignite"><img src="<?php bloginfo('template_directory'); ?>/img/ignite-logo.png" width="230" height="92" alt="Ignite Logo"></a>
-							<h4 class="promote">Youth Meets Every Thursday at 7pm</h4>
+							<h4 class="promote"><?php the_field('ignite_meeting_time', 840); ?></h4>
 						</div>
 				</section>
 				<div id="events-anchor"></div>

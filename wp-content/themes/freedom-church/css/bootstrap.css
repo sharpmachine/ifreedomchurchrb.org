@@ -4263,7 +4263,8 @@ h4 {
   margin-right: 0;
 }
 .hero-home,
-.hero-ignite {
+.hero-ignite,
+.hero-where {
   width: 1200px;
   position: relative;
   left: -115px;
@@ -4848,6 +4849,39 @@ footer {
   font-size: 14px;
   color: #333333;
 }
+/*.......................where page */
+.hero-where {
+  height: 350px;
+  background: url(../img/when-bg.jpg) no-repeat;
+}
+.hero-where h1,
+.hero-where p {
+  color: #ffffff;
+}
+.hero-where h1 {
+  padding-top: 45px;
+}
+.hero-where p {
+  margin: 15px 0;
+  font-size: 18px;
+}
+.when-info {
+  /*height: 500px;*/
+
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  margin-left: 5px;
+  background: url(../img/tree.png) no-repeat bottom right;
+}
+.when-info p,
+.when-info ul,
+.when-info a,
+.when-info li {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+}
 /*.....................contact page */
 .contact-details {
   margin-bottom: 25px;
@@ -5008,6 +5042,7 @@ ul.newsticker a {
 ul.newsticker span {
   margin: 0 10px 0 0;
 }
+/*.......................images */
 img.size-auto,
 img.size-full,
 img.size-large,
@@ -5046,6 +5081,7 @@ img.alignright,
 img.aligncenter {
   margin-bottom: 12px;
 }
+/*.......................posts */
 .entry-meta {
   margin-bottom: 10px;
   /*.oswald-book;*/
@@ -5066,15 +5102,6 @@ img.aligncenter {
   font-size: 14px;
   border-bottom: 1px solid #e6e6e6;
 }
-/*#global-nav li, #global-nav h4 
-{
-	color: red !important;
-	
-	h4
-	{
-		color: red !important;
-	}
-}*/
 /* =Comments
 -------------------------------------------------------------- */
 #comments {

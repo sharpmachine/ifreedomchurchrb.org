@@ -7,7 +7,7 @@
 				<div class="row">
 					<div class="span11 offset5">
 						<img src="<?php bloginfo('template_directory'); ?>/img/ignite-logo.png" width="230" height="92" alt="Ignite Logo">
-						<h4 class="promote">Youth Meets Every Thursday at 7pm</h4>
+						<h4 class="promote"><?php the_field('ignite_meeting_time'); ?></h4>
 						<div class="row">
 							<div class="span10 offset1 ignite-copy">
 								<div class="span9 offset1">
@@ -38,24 +38,19 @@
 							<img src="<?php bloginfo('template_directory'); ?>/img/ignite-contact.png" width="37" height="37" alt="Ignite Contact">
 							<div class="deets">Contact Us</div>
 							<div class="deets-link">
-								<a href="mailto:youth@ifreedomchurchrb.org">youth@ifreedomchurchrb.org</a>
+								<a href="mailto:<?php the_field('ignite_email'); ?>"><?php the_field('ignite_email'); ?></a>
 							</div>
 						</div>
 						<div class="ignite-connect span4">
 							<img src="<?php bloginfo('template_directory'); ?>/img/ignite-facebook.png" width="37" height="37" alt="Ignite Contact">
 							<div class="deets">Facebook Page</div>
 							<div class="deets-link">
-								<a href="#">Ignite Red Bluff</a>
+								<a href="<?php the_field('ignite_facebook'); ?>">Ignite Red Bluff</a>
 							</div>
 						</div>
 					</div>
 				</div>
-			
 			</div>
-			
-				
 		</section>
 		
-		
-	
 <?php get_footer(); ?>

@@ -40,6 +40,10 @@
 						<?php the_content(); ?>
 					<?php endwhile; endif; ?>
 				</div>
+				<div class="span16">
+					Entire site is &copy;<?php echo date('Y'); ?> <?php bloginfo('name'); ?> | <a href="<?php bloginfo('url'); ?>/privacy-policy">Privacy Policy</a> | <a href="<?php bloginfo('url'); ?>/terms-conditions">Terms &amp; Conditions</a>
+				</div>
+				
 			</div>
 			
 		</section><!-- #page -->

@@ -113,7 +113,8 @@ h4
 }
 
 .hero-home,
-.hero-ignite
+.hero-ignite,
+.hero-where
 {
 	width: 1200px;
 	position: relative;
@@ -848,6 +849,48 @@ footer
 	}
 }
 
+/*.......................where page */
+.hero-where
+{
+	height: 350px;
+	background: url(../img/when-bg.jpg) no-repeat;
+	
+	h1,
+	p
+	{
+		color: @white;
+	}
+	
+	h1
+	{
+		padding-top: 45px;
+	}
+	
+	p
+	{
+		margin: 15px 0;
+		font-size: 18px;
+	}
+}
+
+.when-info
+{
+	/*height: 500px;*/
+	.istok;
+	font-size: 14px;
+	margin-left: 5px;
+	background: url(../img/tree.png) no-repeat bottom right;
+	
+	p,
+	ul,
+	a,
+	li
+	{
+		.istok;
+		font-size: 14px;
+	}
+}
+
 /*.....................contact page */
 .contact-details
 {
@@ -993,8 +1036,8 @@ form#mc-embedded-subscribe-form
 	  color: @white;
 	}
 }
-/*......................testimonies ticker */
 
+/*......................testimonies ticker */
 .tickercontainer { /* the outer div with the black border */
 width: 590px;
 height: 38px;
@@ -1037,6 +1080,7 @@ ul.newsticker span {
 margin: 0 10px 0 0;
 }
 
+/*.......................images */
 img.size-auto,
 img.size-full,
 img.size-large,
@@ -1072,20 +1116,7 @@ img.aligncenter {
 	margin-bottom: 12px;
 }
 
-
-
-
-
-
-
-
-
-
-
-.entry-title {
-	
-}
-
+/*.......................posts */
 .entry-meta {
 	margin-bottom: 10px;
 	/*.oswald-book;*/
@@ -1102,21 +1133,3 @@ img.aligncenter {
 	font-size: 14px;
 	border-bottom: 1px solid @grayLight;
 }
-
-.entry-content {
-	
-}
-
-.entry-summary {
-	
-}
-
-/*#global-nav li, #global-nav h4 
-{
-	color: red !important;
-	
-	h4
-	{
-		color: red !important;
-	}
-}*/
