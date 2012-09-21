@@ -65,13 +65,10 @@
 							<a href="<?php bloginfo('url'); ?>/ignite"><img src="<?php bloginfo('template_directory'); ?>/img/ignite-logo.png" width="230" height="92" alt="Ignite Logo"></a>
 							<h4 class="promote">Youth Meets Every Thursday at 7pm</h4>
 						</div>
-					
-					
 				</section>
 				<div id="events-anchor"></div>
 				<section id="page">
 					
-			
 					<h4>Upcoming Events</h4>
 				
 						<?php echo do_shortcode( '[events_list]' ); ?>
@@ -89,7 +86,6 @@
 						</div>
 					</article>
 						
-		
 				</section><!-- #page -->
 
 <?php get_footer(); ?>

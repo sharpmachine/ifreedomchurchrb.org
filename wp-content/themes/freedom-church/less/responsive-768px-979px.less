@@ -1,17 +1,56 @@
 // PORTRAIT TABLET TO DEFAULT DESKTOP
 // ----------------------------------
 
-@media (min-width: 768px) and (max-width: 979px) {
+@media (min-width: 768px) and (max-width: 768px) {
 
-  // Fixed grid
+/*  // Fixed grid
   #grid > .core(42px, 20px);
 
   // Fluid grid
   #grid > .fluid(5.801104972%, 2.762430939%);
 
   // Input grid
-  #grid > .input(42px, 20px);
+  #grid > .input(42px, 20px);*/
 
   // No need to reset .thumbnails here since it's the same @gridGutterWidth
+
+	.wrapper,
+	.page-header
+	{
+		width: 768px;
+	}
+
+	.hero-home,
+	.hero-ignite
+	{
+		width: 768px;
+		left: -27px;
+	}
+
+	.hero-content
+	{
+		margin-left: 316px;
+	}
+
+	#promote
+	{
+		width: 428px;
+		float: right;
+	}
+
+	a.brand
+	{
+		margin: 20px auto;
+	}
+
+	#news-feed
+	{
+		width: 596px;
+	}
+	
+	#page
+	{
+		width: 450px;
+	}
 
 }

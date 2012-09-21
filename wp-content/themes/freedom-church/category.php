@@ -14,7 +14,7 @@
 </section>
 <div class="container">
 	<div class="row">
-		<section id="page" class="span8">
+		<section id="page">
 
 			<?php
 				$category_description = category_description();
@@ -23,7 +23,7 @@
 
 			get_template_part( 'loop', 'category' );
 			?>
-
+			<?php include('newsletter.php'); ?>
 		</section><!-- #page -->
 
 <?php get_footer(); ?>

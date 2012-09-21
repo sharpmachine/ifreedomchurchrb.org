@@ -33,10 +33,11 @@ function custom_login_logo() {
   echo '<style type="text/css">
     h1 a 
     {
-    	 background-image:url('.get_bloginfo('template_directory').'/images/logo.png) !important; 
-    	 width: 200px !important; /* Same width as logo */
-    	 height: 200px !important; /* Same height as logo */
-	     margin-left: -20px !important; /* adjust to center logo above login box */
+    	 background-image:url('.get_bloginfo('template_directory').'/img/logo.png) !important; 
+		 background-size: 176px 104px !important;
+    	 width: 176px !important; /* Same width as logo */
+    	 height: 104px !important; /* Same height as logo */
+	     margin-left: 75px !important; /* adjust to center logo above login box */
 	 }
     </style>';
 }

@@ -47,6 +47,8 @@
 						<?php smm_posted_in(); ?>
 					</div><!-- .entry-utility -->
 				</div><!-- #post-## -->
+				
+				<?php include('newsletter.php'); ?>
 
 				<h3>Leave us a comment</h3><br>
 				<?php comments_template( '', true ); ?>

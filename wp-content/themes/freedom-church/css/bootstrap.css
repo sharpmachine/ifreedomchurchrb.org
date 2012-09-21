@@ -578,12 +578,15 @@ h6 {
   text-transform: uppercase;
 }
 .page-header {
-  padding: 50px 0;
+  padding: 80px 0 20px;
   margin: 0 0;
 }
 .page-header h1 {
   line-height: 1;
   color: #ffffff;
+}
+.page-template-page-about-php .page-header {
+  padding: 50px 0;
 }
 ul,
 ol {
@@ -4828,7 +4831,8 @@ footer {
 }
 .ignite-connect-wrapper {
   height: 40px;
-  padding: 20px 0 20px 20px;
+  margin-left: 212px;
+  padding: 20px 0 20px 10px;
   background-color: #ffffff;
   background-color: rgba(255, 255, 255, 0.3);
 }
@@ -4902,6 +4906,59 @@ form input[type="submit"]:hover {
 form#searchform {
   padding: 40px 0 0 0;
   background-color: transparent;
+}
+/* Mailchimp */
+form#mc-embedded-subscribe-form {
+  background-color: transparent;
+  padding: 0;
+}
+form#mc-embedded-subscribe-form input[type="email"] {
+  width: 280px;
+  height: 15px;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  border: 1px solid #999999;
+  border-right: none;
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-bottom-left-radius: 5px;
+  -moz-border-top-left-radius: 5px;
+  -moz-border-bottom-left-radius: 5px;
+  -o-border-top-left-radius: 5px;
+  -o-border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  color: #333333 !important;
+  padding: 10px;
+  outline: none;
+}
+form#mc-embedded-subscribe-form input[type="submit"] {
+  height: 37px;
+  width: 85px;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  border: #2892d0;
+  border-left: none;
+  -webkit-border-top-right-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  -webkit-border-top-left-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -moz-border-top-right-radius: 5px;
+  -moz-border-bottom-right-radius: 5px;
+  -moz-border-top-left-radius: 0;
+  -moz-border-bottom-left-radius: 0;
+  -o-border-top-right-radius: 5px;
+  -o-border-bottom-right-radius: 5px;
+  -o-border-top-left-radius: 0;
+  -o-border-bottom-left-radius: 0;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -2px;
+  background: #2892d0;
+  color: #ffffff;
 }
 /*......................testimonies ticker */
 .tickercontainer {

@@ -23,7 +23,7 @@ get_header(); ?>
 					<?php get_template_part( 'loop', 'page' ); ?>
 					<?php rewind_posts(); ?>
 					<?php get_template_part( 'loop', 'blog' ); ?>	
-		
+					<?php include('newsletter.php'); ?>
 				</section><!-- #page -->
 
 <?php get_footer(); ?>

@@ -33,17 +33,17 @@
 					</div>
 				</div>
 				<div class="row">
-					<div class="span12 offset4 ignite-connect-wrapper">
-						<div class="ignite-connect span5">
+					<div class="span12 offset5 ignite-connect-wrapper">
+						<div class="ignite-connect span7">
 							<img src="<?php bloginfo('template_directory'); ?>/img/ignite-contact.png" width="37" height="37" alt="Ignite Contact">
 							<div class="deets">Contact Us</div>
 							<div class="deets-link">
-								<a href="mailto:jesse@gmail.com">jesse@gmail.com</a>
+								<a href="mailto:youth@ifreedomchurchrb.org">youth@ifreedomchurchrb.org</a>
 							</div>
 						</div>
-						<div class="ignite-connect span6">
+						<div class="ignite-connect span4">
 							<img src="<?php bloginfo('template_directory'); ?>/img/ignite-facebook.png" width="37" height="37" alt="Ignite Contact">
-							<div class="deets">Check out our Facebook</div>
+							<div class="deets">Facebook Page</div>
 							<div class="deets-link">
 								<a href="#">Ignite Red Bluff</a>
 							</div>
