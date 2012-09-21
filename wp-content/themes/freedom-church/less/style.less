@@ -475,6 +475,123 @@ body.logged-in #social-media
 	}
 }
 
+/* Single Events */
+.single-event-block
+{	
+	a.btn
+	{
+		margin-right: 10px;
+	}
+}
+
+.add-info
+{
+	color: @grayDark;
+	font-weight: 100;
+	
+	span
+	{
+		font-weight: bold;
+		font-size: 14px;
+	}
+}
+
+.single-event-venue
+{
+	color: @grayDark;
+	font-weight: 100;
+	
+	span.single-venue
+	{
+		font-size: 14px;
+	}
+}
+
+.additional-info
+{
+	margin-bottom: 40px;
+	
+	h3
+	{
+		font-size: 18px;
+	}
+}
+
+img.single-event-image
+{
+	margin-top: -132px;
+	display: block;
+	float: right;
+	position: relative;
+	right: -125px;
+	top: 540px;
+}
+
+#event-description
+{
+	padding-top: 150px;
+	color: @grayDark;
+}
+
+#event-registration
+{
+	p
+	{
+		margin-top: 20px;
+		.istok;
+		font-size: 16px;
+		color: @blue;
+	}
+}
+
+#em-booking
+{
+	background-color: @grayLight;
+	
+	form
+	{
+		background: transparent;
+		
+		table
+		{
+			width: 100%;
+			
+			td
+			{
+				font-weight: bold;
+				
+				span.ticket-desc
+				{
+					font-weight: normal;
+				}
+			}
+			
+			th
+			{
+				text-align: left;
+				padding-bottom: 10px;
+			}
+			
+			select
+			{
+				width: 50px;
+			}
+		}
+		
+		input.em-booking-submit
+		{
+			margin: 0 0 70px 210px;
+		}
+	}
+}
+
+#reg-disclaimer
+{
+	position: relative;
+	top: -70px;
+	left: 40px;
+}
+
 /*......................free thinging box */
 
 #free-thinking
@@ -539,7 +656,8 @@ body.logged-in #social-media
 	
 }
 
-#page
+#page,
+#event-description
 {
 	margin: 50px 0 115px 290px;
 }
@@ -899,7 +1017,6 @@ footer
 
 .when-info
 {
-	/*height: 500px;*/
 	.istok;
 	font-size: 14px;
 	margin-left: 5px;

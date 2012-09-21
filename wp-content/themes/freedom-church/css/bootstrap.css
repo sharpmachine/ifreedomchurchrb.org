@@ -4568,6 +4568,80 @@ body.logged-in #social-media {
   position: relative;
   left: -50px;
 }
+/* Single Events */
+.single-event-block a.btn {
+  margin-right: 10px;
+}
+.add-info {
+  color: #666666;
+  font-weight: 100;
+}
+.add-info span {
+  font-weight: bold;
+  font-size: 14px;
+}
+.single-event-venue {
+  color: #666666;
+  font-weight: 100;
+}
+.single-event-venue span.single-venue {
+  font-size: 14px;
+}
+.additional-info {
+  margin-bottom: 40px;
+}
+.additional-info h3 {
+  font-size: 18px;
+}
+img.single-event-image {
+  margin-top: -132px;
+  display: block;
+  float: right;
+  position: relative;
+  right: -125px;
+  top: 540px;
+}
+#event-description {
+  padding-top: 150px;
+  color: #666666;
+}
+#event-registration p {
+  margin-top: 20px;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #2892d0;
+}
+#em-booking {
+  background-color: #e6e6e6;
+}
+#em-booking form {
+  background: transparent;
+}
+#em-booking form table {
+  width: 100%;
+}
+#em-booking form table td {
+  font-weight: bold;
+}
+#em-booking form table td span.ticket-desc {
+  font-weight: normal;
+}
+#em-booking form table th {
+  text-align: left;
+  padding-bottom: 10px;
+}
+#em-booking form table select {
+  width: 50px;
+}
+#em-booking form input.em-booking-submit {
+  margin: 0 0 70px 210px;
+}
+#reg-disclaimer {
+  position: relative;
+  top: -70px;
+  left: 40px;
+}
 /*......................free thinging box */
 #free-thinking {
   margin: 40px 0 0 0;
@@ -4620,7 +4694,8 @@ body.logged-in #social-media {
   color: #2892d0;
   text-transform: uppercase;
 }
-#page {
+#page,
+#event-description {
   margin: 50px 0 115px 290px;
 }
 /*.........................the footer*/
@@ -4885,8 +4960,6 @@ footer {
   font-size: 18px;
 }
 .when-info {
-  /*height: 500px;*/
-
   font-family: 'Istok Web', sans-serif;
   font-weight: 400;
   font-size: 14px;

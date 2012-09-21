@@ -6,16 +6,8 @@
 </section>
 <div class="container">
 	<div class="row">
-		<section id="page">
-			<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
-				
-				<?php the_title() ?>
-				<?php the_content() ?>
-			<?php endwhile; ?>
-				<!-- post navigation -->
-			<?php else: ?>
-				<!-- no posts found -->
-			<?php endif; ?>
-		</section><!-- #page -->
-
+		<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
+			<img src="<?php the_field('big_photo'); ?>" width="845" height="185" alt="Event Image" class="single-event-image">
+			<?php the_content() ?>
+		<?php endwhile; endif; ?>
 <?php get_footer(); ?>

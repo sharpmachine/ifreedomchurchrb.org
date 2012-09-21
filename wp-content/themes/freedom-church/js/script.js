@@ -45,6 +45,8 @@ jQuery(document).ready(function($) { // when the document becomes ready for mani
 
   $('.ignite-icons-wrapper').tooltip({ selector: "a[rel=tooltip]" });
 
+	$("input.em-booking-submit").addClass('btn btn-large');
+
 });
 
 
