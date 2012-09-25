@@ -4192,6 +4192,7 @@ body {
   -webkit-box-shadow: 0 0 15px #999999;
   -moz-box-shadow: 0 0 15px #999999;
   box-shadow: 0 0 15px #999999;
+  overflow: hidden;
 }
 .black {
   color: #333333;
@@ -4230,11 +4231,15 @@ h4 {
   border-bottom: 1px solid #e6e6e6;
 }
 .tabbys .nav {
-  margin-bottom: -10px;
+  /*margin-bottom: -10px;*/
+
 }
 .tabbys .nav-tabs {
   border: none;
   margin-left: 230px;
+}
+.tabbys .nav-tabs > li {
+  margin-bottom: -29px;
 }
 .tabbys .nav-tabs > li > a {
   width: 130px;
@@ -4612,6 +4617,10 @@ img.single-event-image {
   font-size: 16px;
   color: #2892d0;
 }
+.em-location-map {
+  width: 350px !important;
+  height: 255px !important;
+}
 #em-booking {
   background-color: #e6e6e6;
 }
@@ -4636,6 +4645,7 @@ img.single-event-image {
 }
 #em-booking form input.em-booking-submit {
   margin: 0 0 70px 210px;
+  text-transform: uppercase;
 }
 #reg-disclaimer {
   position: relative;
@@ -5108,7 +5118,7 @@ ul.newsticker {
   /* that's your list */
 
   position: relative;
-  left: 750px;
+  left: 550px;
   list-style-type: none;
   margin: 0;
   padding: 0;
@@ -5176,17 +5186,14 @@ img.aligncenter {
 /*.......................posts */
 .entry-meta {
   margin-bottom: 10px;
-  /*.oswald-book;*/
-
   font-family: 'Istok Web', sans-serif;
   font-weight: 400;
   font-size: 14px;
 }
 .entry-utility {
+  clear: both;
   margin-bottom: 10px;
   padding-bottom: 10px;
-  /*.istok;*/
-
   font-family: 'Oswald', sans-serif;
   font-weight: 300;
   text-transform: uppercase;

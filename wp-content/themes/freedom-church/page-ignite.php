@@ -33,6 +33,8 @@
 					</div>
 				</div>
 				<div class="row">
+					<a href="#" rel="tooltip" data-placement="right" title="We love because He first loved us. 
+					We are loved to be love."></a>
 					<div class="span12 offset5 ignite-connect-wrapper">
 						<div class="ignite-connect span7">
 							<img src="<?php bloginfo('template_directory'); ?>/img/ignite-contact.png" width="37" height="37" alt="Ignite Contact">
@@ -52,5 +54,6 @@
 				</div>
 			</div>
 		</section>
+		
 		
 <?php get_footer(); ?>

@@ -1,0 +1,53 @@
+<style type="text/css" media="screen">
+	/* liScroll styles */
+
+	.tickercontainer { /* the outer div with the black border */
+	border: 1px solid #000;
+	background: #fff; 
+	width: 738px; 
+	height: 27px; 
+	margin: 0; 
+	padding: 0;
+	overflow: hidden; 
+	}
+	.tickercontainer .mask { /* that serves as a mask. so you get a sort of padding both left and right */
+	position: relative;
+	left: 10px;
+	top: 8px;
+	width: 718px;
+	overflow: hidden;
+	}
+	ul.newsticker { /* that's your list */
+	position: relative;
+	left: 750px;
+	font: bold 10px Verdana;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+
+	}
+	ul.newsticker li {
+	float: left; /* important: display inline gives incorrect results when you check for elem's width */
+	margin: 0;
+	padding: 0;
+	background: #fff;
+	}
+	ul.newsticker a {
+	white-space: nowrap;
+	padding: 0;
+	color: #ff0000;
+	font: bold 10px Verdana;
+	margin: 0 50px 0 0;
+	} 
+	ul.newsticker span {
+	margin: 0 10px 0 0;
+	}
+</style>
+<ul id="ticker">
+	<li><a href="<?php the_permalink(); ?>">Blah Blah 1</a> - Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</li>
+	<li><a href="<?php the_permalink(); ?>">Blah Blah 2</a> - Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</li>
+	<!-- eccetera -->
+</ul>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="http://localhost/ifreedomchurchrb.org/wp-content/themes/freedom-church/js/plugins.js"></script>
+<script src="http://localhost/ifreedomchurchrb.org/wp-content/themes/freedom-church/js/script.js"></script>

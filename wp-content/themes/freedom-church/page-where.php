@@ -10,18 +10,10 @@
 			</div>
 		</section>
 		
-<div class="container">
-	<div class="row">
 		<section id="page">
-			
-				<div class="when-info">
-					<?php get_template_part( 'loop', 'page' ); ?>
-				</div>
-				
-				
-		
-			
-			
+			<div class="when-info">
+				<?php get_template_part( 'loop', 'page' ); ?>
+			</div>	
 		</section><!-- #page -->
 
 <?php get_footer(); ?>

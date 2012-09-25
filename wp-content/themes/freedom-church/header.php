@@ -35,6 +35,7 @@
 		<link href='http://fonts.googleapis.com/css?family=Istok+Web' rel='stylesheet' type='text/css'>
     	<link href="<?php bloginfo('template_directory'); ?>/css/bootstrap.css" rel="stylesheet">
     	<link href="<?php bloginfo('template_directory'); ?>/css/responsive.css" rel="stylesheet">
+		<!--[if lte IE 9]><link href="<?php bloginfo('template_directory'); ?>/css/ie.css" rel="stylesheet"></script><![endif]-->
 
 		<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>" />
 
@@ -47,6 +48,7 @@
 
 		<script src="<?php bloginfo('template_directory'); ?>/js/modernizr-1.7.min.js"></script>
 		<!--[if lte IE 8]><script src="<?php bloginfo('template_directory'); ?>/js/selectivizr-min.js"></script><![endif]-->
+		
 	
 		<?php
 			if ( is_singular() && get_option( 'thread_comments' ) )
@@ -64,7 +66,6 @@
 						<a class="brand" href="<?php bloginfo('url') ?>"><img src="<?php bloginfo('template_directory'); ?>/img/logo.png" width="176" height="104" alt="Logo"></a>
 
 						<?php wp_nav_menu( array( 'theme_location' => 'primary', 'container' => false, 'menu_class' => 'nav', 'walker' => new Bootstrap_Menu_Walker ) ); ?>
-						 <a href="http://twitter.github.com/bootstrap" target="_blank" style="display:block; text-align:center;">Bootstrap Docs</a>
 							<div id="social-media">
 								<a href="<?php the_field('facebook_url', 'option'); ?>" title="Like us on Facebook"><img src="<?php bloginfo('template_directory'); ?>/img/facebook.png" width="36" height="36" alt="Facebook"></a>
 								<a href="<?php the_field('twitter_url', 'option'); ?>" title="Follow us on Twitter"><img src="<?php bloginfo('template_directory'); ?>/img/twitter.png" width="36" height="36" alt="Twitter"></a>
