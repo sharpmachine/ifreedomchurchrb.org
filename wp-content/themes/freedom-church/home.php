@@ -71,7 +71,7 @@
 					
 					<h4>Upcoming Events</h4>
 				
-						<?php echo do_shortcode( '[events_list]' ); ?>
+						<?php echo do_shortcode( '[events_list limit="3"]' ); ?>
 					
 					<hr>
 					<article id="free-thinking" class="span16">

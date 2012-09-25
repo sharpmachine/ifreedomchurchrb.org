@@ -49,7 +49,7 @@
 					<div class="feature-box">
 						<div class="span9"><img src="<?php the_field('mission_partners_logo_or_photo'); ?>" alt="<?php the_field('mission_partners'); ?>"></div>
 						<div class="span7 feature-box-info">
-							<h3 class="black">Mission Partners</h3>
+							<h3 class="black">Mission Partner</h3>
 							<?php the_field('mission_partners'); ?>
 						</div>
 					</div>
