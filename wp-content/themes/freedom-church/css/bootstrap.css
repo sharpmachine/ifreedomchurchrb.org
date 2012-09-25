@@ -551,6 +551,13 @@ h2 {
 h2 small {
   font-size: 18px;
 }
+h2.tagline {
+  padding-top: 45px;
+  margin-bottom: 25px;
+  line-height: 50px;
+  font-size: 42px;
+  color: #0c3551;
+}
 h3 {
   font-size: 20px;
   line-height: 27px;
@@ -564,10 +571,22 @@ h6 {
   line-height: 18px;
 }
 h4 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
   font-size: 18px;
 }
 h4 small {
   font-size: 12px;
+}
+h4.promote {
+  padding: 5px 10px;
+  display: inline-block;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.5);
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
 }
 h5 {
   font-size: 14px;
@@ -2820,6 +2839,7 @@ input[type="submit"].btn.btn-mini {
 /*
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
+/*.......................global */
 body {
   background: url(../img/tile.png);
 }
@@ -2832,277 +2852,11 @@ body {
   box-shadow: 0 0 15px #999999;
   overflow: hidden;
 }
-.black {
-  color: #333333;
+#page,
+#event-description {
+  margin: 50px 0 115px 290px;
 }
-.gray {
-  color: #c1bfbf;
-}
-.grayDark {
-  color: #666666;
-}
-.big-bottom {
-  margin-bottom: 35px;
-}
-h4 {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 300;
-  text-transform: uppercase;
-  font-size: 18px;
-  color: #2892d0;
-}
-.page-header {
-  width: 1200px;
-  background-color: #2892d0;
-}
-.page-header h1 {
-  width: 670px;
-  margin-left: 280px;
-}
-.page-header h1 a {
-  color: #ffffff;
-}
-.page-header h1 a:hover {
-  text-decoration: none;
-}
-.tabbys {
-  border-bottom: 1px solid #e6e6e6;
-}
-.tabbys .nav {
-  /*margin-bottom: -10px;*/
-
-}
-.tabbys .nav-tabs {
-  border: none;
-  margin-left: 230px;
-}
-.tabbys .nav-tabs > li {
-  margin-bottom: -29px;
-}
-.tabbys .nav-tabs > li > a {
-  width: 130px;
-  font-family: 'Oswald', sans-serif;
-  font-weight: 300;
-  text-transform: uppercase;
-  color: #999999;
-  font-size: 18px;
-  padding: 12px 15px 21px 50px;
-  line-height: 18px;
-  border: none;
-}
-.tabbys .nav-tabs > li > a:hover {
-  background-color: transparent;
-  color: #339933;
-  border: none;
-  border-radius: 0;
-}
-.tabbys .nav-tabs > .active > a,
-.tabbys .nav-tabs > .active > a:hover {
-  color: #339933;
-  background: url(../img/tab-bg.png) transparent;
-  border: none;
-  border-bottom-color: transparent;
-  cursor: default;
-  margin-right: 0;
-}
-.hero-home,
-.hero-ignite,
-.hero-where {
-  width: 1200px;
-  position: relative;
-  left: -115px;
-}
-.hero-home {
-  height: 717px;
-  background: url(../img/home-ph.jpg) no-repeat;
-}
-.hero-content {
-  width: 670px;
-  margin-left: 405px;
-}
-h2.tagline {
-  padding-top: 45px;
-  margin-bottom: 25px;
-  line-height: 50px;
-  text-transform: none;
-  font-family: 'Istok Web', sans-serif;
-  font-weight: 400;
-  font-size: 42px;
-  color: #0c3551;
-}
-#church-info {
-  height: 542px;
-}
-#church-info .related-info {
-  width: 243px;
-  float: left;
-}
-.service-info {
-  margin-left: 0;
-  /*padding-top: 30px;*/
-
-  font-family: 'Istok Web', sans-serif;
-  font-weight: 400;
-  color: #333333;
-}
-.service-info h2 {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 300;
-  text-transform: uppercase;
-  color: #0c3551;
-}
-.info-title {
-  margin: 15px 0 5px 0;
-  font-size: 24px;
-  color: #2892d0;
-}
-.sub-title {
-  font-size: 18px;
-  line-height: 30px;
-}
-.related-info {
-  font-size: 14px;
-}
-.related-info a img {
-  display: inline-block;
-  float: right;
-  position: relative;
-  top: -6px;
-}
-.info-box {
-  height: 315px;
-  background: #ffffff;
-  /* Old browsers */
-
-  background: -moz-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
-  /* FF3.6+ */
-
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(30%, #ffffff), color-stop(100%, #e6e6e6));
-  /* Chrome,Safari4+ */
-
-  background: -webkit-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
-  /* Chrome10+,Safari5.1+ */
-
-  background: -o-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
-  /* Opera 11.10+ */
-
-  background: -ms-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
-  /* IE10+ */
-
-  background: linear-gradient(to bottom, #ffffff 30%, #e6e6e6 100%);
-  /* W3C */
-
-  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
-  /* IE6-9 */
-
-  position: relative;
-  display: none;
-}
-.info-box-content {
-  height: 315px;
-  background: url(../img/tile.png);
-}
-a.visting {
-  margin-top: 20px;
-}
-.see-map {
-  padding: 45px 20px;
-}
-.see-map a {
-  display: block;
-  margin-top: 15px;
-  font-family: Helvetica, Arial, sans-serif;
-  color: #2fb81b;
-}
-a.see-map-icon,
-a.get-directions-icon {
-  width: 26px;
-  height: 26px;
-  display: block;
-  float: left;
-  position: relative;
-  top: -5px;
-}
-a.see-map-icon {
-  background: url(../img/see-map.png) no-repeat;
-}
-a.get-directions-icon {
-  background: url(../img/get-directions.png) no-repeat;
-}
-.map {
-  border: solid 10px #ffffff;
-}
-.visiting-info {
-  padding: 20px 30px;
-}
-.visiting-info p {
-  font-family: 'Istok Web', sans-serif;
-  font-weight: 400;
-  font-size: 12px;
-}
-.visiting-info p.sudo-title {
-  font-size: 24px;
-  color: #2fb81b;
-  line-height: 30px;
-}
-.close-box {
-  position: absolute;
-  top: 5px;
-  right: 7px;
-}
-.close-box a {
-  color: #2fb81b;
-}
-.close-box a:hover {
-  text-decoration: none;
-}
-#news-feed {
-  width: 685px;
-  height: 175px;
-  float: left;
-  background-color: #2892d0;
-  font-family: Helvetica, Arial, sans-serif;
-  color: #c1bfbf;
-}
-#news-feed a {
-  color: #ffffff;
-}
-#news-feed h4 {
-  margin-bottom: 20px;
-}
-#news-feed span {
-  font-family: 'Istok Web', sans-serif;
-  font-weight: 400;
-  font-size: 16px;
-  color: #333333;
-}
-#news-feed-content {
-  width: 205px;
-  padding: 35px 70px 40px 0;
-  float: right;
-}
-#promote {
-  width: 515px;
-  height: 175px;
-  float: left;
-  background: url(../img/ignite-bg-small.jpg) no-repeat;
-}
-#promote a {
-  display: block;
-  margin: 25px 0 0 65px;
-}
-#promote h4.promote {
-  margin: 15px 0 0 65px;
-}
-h4.promote {
-  padding: 5px 10px;
-  display: inline-block;
-  color: #ffffff;
-  background-color: rgba(0, 0, 0, 0.5);
-  -webkit-border-radius: 20px;
-  -moz-border-radius: 20px;
-  border-radius: 20px;
-}
+/* Vertical Navigation */
 #navigation li.not-active a {
   background-color: transparent;
   color: #999999;
@@ -3176,9 +2930,257 @@ a.brand {
 #social-media a {
   margin-right: 5px;
 }
-/*......................logged in*/
-body.logged-in #social-media {
+.logged-in #social-media {
   bottom: 43px;
+}
+/* Color Overrided */
+.black {
+  color: #333333;
+}
+.gray {
+  color: #c1bfbf;
+}
+.grayDark {
+  color: #666666;
+}
+/* Big Margin */
+.big-bottom {
+  margin-bottom: 35px;
+}
+/* Page Header */
+.page-header {
+  width: 1200px;
+  background-color: #2892d0;
+}
+.page-header h1 {
+  width: 670px;
+  margin-left: 280px;
+}
+.page-header h1 a {
+  color: #ffffff;
+}
+.page-header h1 a:hover {
+  text-decoration: none;
+}
+/* Tabs */
+.tabbys {
+  border-bottom: 1px solid #e6e6e6;
+}
+.tabbys .nav-tabs {
+  border: none;
+  margin-left: 230px;
+}
+.tabbys .nav-tabs > li {
+  margin-bottom: -29px;
+}
+.tabbys .nav-tabs > li > a {
+  width: 130px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  color: #999999;
+  font-size: 18px;
+  padding: 12px 15px 21px 50px;
+  line-height: 18px;
+  border: none;
+}
+.tabbys .nav-tabs > li > a:hover {
+  background-color: transparent;
+  color: #339933;
+  border: none;
+  border-radius: 0;
+}
+.tabbys .nav-tabs > .active > a,
+.tabbys .nav-tabs > .active > a:hover {
+  color: #339933;
+  background: url(../img/tab-bg.png) transparent;
+  border: none;
+  border-bottom-color: transparent;
+  cursor: default;
+  margin-right: 0;
+}
+/* Hero Unit */
+.hero-home,
+.hero-ignite,
+.hero-where {
+  width: 1200px;
+  position: relative;
+  left: -115px;
+}
+.hero-content {
+  width: 670px;
+  margin-left: 405px;
+}
+/*......................home page*/
+.hero-home {
+  height: 717px;
+  background: url(../img/home-ph.jpg) no-repeat;
+}
+/* Church Info */
+#church-info {
+  height: 542px;
+}
+#church-info .related-info {
+  width: 243px;
+  float: left;
+}
+.service-info {
+  margin-left: 0;
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  color: #333333;
+}
+.service-info h2 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  color: #0c3551;
+}
+.info-title {
+  margin: 15px 0 5px 0;
+  font-size: 24px;
+  color: #2892d0;
+}
+.sub-title {
+  font-size: 18px;
+  line-height: 30px;
+}
+.related-info {
+  font-size: 14px;
+}
+.related-info a img {
+  display: inline-block;
+  float: right;
+  position: relative;
+  top: -6px;
+}
+/* Info Box */
+.info-box {
+  height: 315px;
+  background: #ffffff;
+  /* Old browsers */
+
+  background: -moz-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* FF3.6+ */
+
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(30%, #ffffff), color-stop(100%, #e6e6e6));
+  /* Chrome,Safari4+ */
+
+  background: -webkit-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* Chrome10+,Safari5.1+ */
+
+  background: -o-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* Opera 11.10+ */
+
+  background: -ms-linear-gradient(top, #ffffff 30%, #e6e6e6 100%);
+  /* IE10+ */
+
+  background: linear-gradient(to bottom, #ffffff 30%, #e6e6e6 100%);
+  /* W3C */
+
+  filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  /* IE6-9 */
+
+  position: relative;
+  display: none;
+}
+.info-box-content {
+  height: 315px;
+  background: url(../img/tile.png);
+}
+a.visting {
+  margin-top: 20px;
+}
+/* Maps */
+.see-map {
+  padding: 45px 20px;
+}
+.see-map a {
+  display: block;
+  margin-top: 15px;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #2fb81b;
+}
+a.see-map-icon,
+a.get-directions-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+  float: left;
+  position: relative;
+  top: -5px;
+}
+a.see-map-icon {
+  background: url(../img/see-map.png) no-repeat;
+}
+a.get-directions-icon {
+  background: url(../img/get-directions.png) no-repeat;
+}
+.map {
+  border: solid 10px #ffffff;
+}
+.visiting-info {
+  padding: 20px 30px;
+}
+.visiting-info p {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+}
+.visiting-info p.sudo-title {
+  font-size: 24px;
+  color: #2fb81b;
+  line-height: 30px;
+}
+.close-box {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+}
+.close-box a {
+  color: #2fb81b;
+}
+.close-box a:hover {
+  text-decoration: none;
+}
+/* News Feed & Ignite Promo */
+#news-feed {
+  width: 685px;
+  height: 175px;
+  float: left;
+  background-color: #2892d0;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #c1bfbf;
+}
+#news-feed a {
+  color: #ffffff;
+}
+#news-feed h4 {
+  margin-bottom: 20px;
+}
+#news-feed span {
+  font-family: 'Istok Web', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #333333;
+}
+#news-feed-content {
+  width: 205px;
+  padding: 35px 70px 40px 0;
+  float: right;
+}
+#promote {
+  width: 515px;
+  height: 175px;
+  float: left;
+  background: url(../img/ignite-bg-small.jpg) no-repeat;
+}
+#promote a {
+  display: block;
+  margin: 25px 0 0 65px;
+}
+#promote h4.promote {
+  margin: 15px 0 0 65px;
 }
 /*......................events listing*/
 #events {
@@ -3341,10 +3343,6 @@ img.single-event-image {
   font-size: 12px;
   color: #2892d0;
   text-transform: uppercase;
-}
-#page,
-#event-description {
-  margin: 50px 0 115px 290px;
 }
 /*.........................the footer*/
 footer {
@@ -3838,6 +3836,13 @@ img.aligncenter {
   text-transform: lowercase;
   font-size: 14px;
   border-bottom: 1px solid #e6e6e6;
+}
+/*.......................print styles */
+@media print {
+  footer,
+  #social-media {
+    display: none;
+  }
 }
 /* =Comments
 -------------------------------------------------------------- */

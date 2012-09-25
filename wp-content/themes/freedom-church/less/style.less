@@ -1,15 +1,11 @@
 /*
 Project Name: Freedom Church - ifreedomchurchrb.com
 */
+
+/*.......................global */
 body
 {
 	background: url(../img/tile.png);
-}
-
-
-#page
-{
-	
 }
 
 .wrapper
@@ -21,6 +17,87 @@ body
 	overflow: hidden;
 	
 }
+
+#page,
+#event-description
+{
+	margin: 50px 0 115px 290px;
+}
+
+/* Vertical Navigation */
+#navigation li.not-active a
+{
+	background-color: transparent;
+	color: @gray;
+	
+	&:hover
+	{
+		color: @green;
+		background-color: @white;
+	}
+}
+
+#navigation-shadow
+{
+	width: 245px;
+	height: 100%;
+	margin-left: 0;
+	position: fixed;
+	z-index: 2;
+	background: url(../img/menu-shadow2.png) top right no-repeat;
+}
+
+#navigation-gradient
+{
+	width: 230px;
+	height: 100%;
+	.gradient;
+}
+
+#navigation
+{
+	height:100%;
+	margin-left: 0;
+	position: fixed;
+	z-index: 2;
+	background: url(../img/tile.png);
+	
+	li a
+	{
+		padding: 5px 0 5px 70px;
+		.oswald-book;
+		font-size: 24px;
+		line-height: 24px;
+	}
+	
+}
+
+a.brand
+{
+	width: 176px;
+	height: 104px;
+	margin: 30px auto 60px auto;
+	display: block;
+}
+
+#social-media
+{
+	padding-left: 75px;
+	position: absolute;
+	bottom: 15px;
+	
+	a
+	{
+		margin-right: 5px;
+	}
+}
+
+.logged-in #social-media
+{
+	bottom: 43px;
+}
+
+/* Color Overrided */
 .black
 {
 	color: @black;
@@ -36,18 +113,13 @@ body
 	color: @grayDark;
 }
 
+/* Big Margin */
 .big-bottom
 {
 	margin-bottom: 35px;
 }
 
-h4
-{
-	.oswald-book;
-	font-size: 18px;
-	color: @blue;
-}
-
+/* Page Header */
 .page-header
 {
 	width: 1200px;
@@ -70,14 +142,10 @@ h4
 	}
 }
 
+/* Tabs */
 .tabbys
 {
 	border-bottom: 1px solid @grayLight;
-	
-	.nav
-	{
-		/*margin-bottom: -10px;*/
-	}
 	
 	.nav-tabs
 	{
@@ -118,6 +186,7 @@ h4
 	}
 }
 
+/* Hero Unit */
 .hero-home,
 .hero-ignite,
 .hero-where
@@ -127,29 +196,20 @@ h4
 	left: -115px;
 }
 
-.hero-home
-{
-	height: 717px;
-	background: url(../img/home-ph.jpg) no-repeat;
-}
-
 .hero-content
 {
 	width: 670px;
 	margin-left: 405px;
 }
 
-h2.tagline
+/*......................home page*/
+.hero-home
 {
-	padding-top: 45px;
-	margin-bottom: 25px;
-	line-height: 50px;
-	text-transform: none;
-	.istok;
-	font-size: 42px;
-	color: @blueDark;
+	height: 717px;
+	background: url(../img/home-ph.jpg) no-repeat;
 }
 
+/* Church Info */
 #church-info
 {
 	height: 542px;
@@ -164,7 +224,6 @@ h2.tagline
 .service-info
 {
 	margin-left: 0;
-	/*padding-top: 30px;*/
 	.istok;
 	color: @black;
 	
@@ -201,6 +260,7 @@ h2.tagline
 	}
 }
 
+/* Info Box */
 .info-box
 {
 	height: 315px;
@@ -220,6 +280,7 @@ a.visting
 	margin-top: 20px;
 }
 
+/* Maps */
 .see-map
 {
 	padding: 45px 20px;
@@ -294,6 +355,7 @@ a.get-directions-icon
 	}
 }
 
+/* News Feed & Ignite Promo */
 #news-feed
 {
 	width: 685px;
@@ -347,91 +409,7 @@ a.get-directions-icon
 	}
 }
 
-h4.promote
-{
-	padding: 5px 10px;
-	display: inline-block;
-	color: @white;
-	background-color: rgba(0,0,0,0.5);
-	.border-radius(20px);
-}
-
-#navigation li.not-active a
-{
-	background-color: transparent;
-	color: @gray;
-	
-	&:hover
-	{
-		color: @green;
-		background-color: @white;
-	}
-}
-
-#navigation-shadow
-{
-	width: 245px;
-	height: 100%;
-	margin-left: 0;
-	position: fixed;
-	z-index: 2;
-	background: url(../img/menu-shadow2.png) top right no-repeat;
-}
-
-#navigation-gradient
-{
-	width: 230px;
-	height: 100%;
-	.gradient;
-}
-
-#navigation
-{
-	height:100%;
-	margin-left: 0;
-	position: fixed;
-	z-index: 2;
-	background: url(../img/tile.png);
-	
-	li a
-	{
-		padding: 5px 0 5px 70px;
-		.oswald-book;
-		font-size: 24px;
-		line-height: 24px;
-	}
-	
-}
-
-a.brand
-{
-	width: 176px;
-	height: 104px;
-	margin: 30px auto 60px auto;
-	display: block;
-}
-
-#social-media
-{
-	padding-left: 75px;
-	position: absolute;
-	bottom: 15px;
-	
-	a
-	{
-		margin-right: 5px;
-	}
-}
-
-/*......................logged in*/
-
-body.logged-in #social-media
-{
-	bottom: 43px;
-}
-
 /*......................events listing*/
-
 #events
 {
 	margin-bottom: 30px;
@@ -604,7 +582,6 @@ img.single-event-image
 }
 
 /*......................free thinging box */
-
 #free-thinking
 {
 	margin: 40px 0 0 0;
@@ -667,12 +644,6 @@ img.single-event-image
 	
 }
 
-#page,
-#event-description
-{
-	margin: 50px 0 115px 290px;
-}
-
 /*.........................the footer*/
 
 footer
@@ -712,7 +683,6 @@ footer
 }
 
 /*..........................About page*/
-
 .leader
 {
 	margin-top: 25px;
@@ -882,7 +852,6 @@ footer
 }
 
 /*.....................friends page */
-
 .friends
 {
 	margin-bottom: 15px;
@@ -1283,4 +1252,13 @@ img.aligncenter {
 	text-transform: lowercase;
 	font-size: 14px;
 	border-bottom: 1px solid @grayLight;
+}
+
+/*.......................print styles */
+@media print {
+	
+	  footer,
+	  #social-media {
+		display: none;
+	}
 }

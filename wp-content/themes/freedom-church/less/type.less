@@ -49,6 +49,14 @@ h2 {
   small {
     font-size: 18px;
   }
+  
+  &.tagline {
+	padding-top: 45px;
+	margin-bottom: 25px;
+	line-height: 50px;
+	font-size: 42px;
+	color: @blueDark;
+  }
 }
 h3 {
   font-size: 20px;
@@ -61,10 +69,18 @@ h4, h5, h6 {
   line-height: @baseLineHeight;
 }
 h4 {
+   .oswald-book;
   font-size: 18px;
   small {
     font-size: 12px;
   }
+  &.promote {
+	padding: 5px 10px;
+	display: inline-block;
+	color: @white;
+	background-color: rgba(0,0,0,0.5);
+	.border-radius(20px);
+}
 }
 h5 {
   font-size: 14px;
