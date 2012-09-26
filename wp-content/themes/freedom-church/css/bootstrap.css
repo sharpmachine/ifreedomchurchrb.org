@@ -3263,6 +3263,9 @@ img.single-event-image {
   width: 350px !important;
   height: 255px !important;
 }
+div.em-booking-message {
+  margin: 10px 0px 50px 0 !important;
+}
 #em-booking {
   background-color: #e6e6e6;
 }
