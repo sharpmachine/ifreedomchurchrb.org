@@ -28,8 +28,8 @@
 			</div>
 			
 			<div id="monthly-parnter" class="row">
-				<div class="span4"><h3 class="black">Monthly Partner</h3></div>
-				<div class="span12">
+				<div class="span5"><h3 class="black">Monthly Partner</h3></div>
+				<div class="span11">
 					<?php while(the_repeater_field('monthly_partner')): ?>
 						<a href="<?php the_sub_field('monthly_partner_paypal_url'); ?>" class="btn btn-large"><?php the_sub_field('monthly_partner_button_label'); ?></a>
 					<?php endwhile; ?>

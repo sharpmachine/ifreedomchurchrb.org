@@ -11,7 +11,7 @@ body
 .wrapper
 {
 	width: 1200px;
-	margin: 0 auto;
+	.center-block;
 	background-color: @white;
 	.box-shadow;
 	overflow: hidden;
@@ -39,8 +39,7 @@ body
 
 #navigation-shadow
 {
-	width: 245px;
-	height: 100%;
+	.size(245px, 100%);
 	margin-left: 0;
 	position: fixed;
 	z-index: 2;
@@ -49,8 +48,7 @@ body
 
 #navigation-gradient
 {
-	width: 230px;
-	height: 100%;
+	.size(230px, 100%);
 	.gradient;
 }
 
@@ -74,8 +72,7 @@ body
 
 a.brand
 {
-	width: 176px;
-	height: 104px;
+	.size(176px, 104px);
 	margin: 30px auto 60px auto;
 	display: block;
 }
@@ -297,8 +294,7 @@ a.visting
 a.see-map-icon,
 a.get-directions-icon
 {
-	width:26px;
-	height:26px;
+	.square(26px);
 	display: block;
 	float: left;
 	position: relative;
@@ -1110,22 +1106,22 @@ form#mc-embedded-subscribe-form
 	
 	input[type="email"] {
 	  width: 280px;
-	  height: 15px;
-	.istok;
-	font-size: 14px;
-	  border: 1px solid @gray;
-	  border-right: none;
-	  -webkit-border-top-left-radius: 5px;
-	  -webkit-border-bottom-left-radius: 5px;
-	-moz-border-top-left-radius: 5px;
-	  -moz-border-bottom-left-radius: 5px;
-	-o-border-top-left-radius: 5px;
-	  -o-border-bottom-left-radius: 5px;
-	 border-top-left-radius: 5px;
-	  border-bottom-left-radius: 5px;
-	  color: @black !important;
-	  padding: 10px;
-	  outline: none;
+		height: 15px;
+		.istok;
+		font-size: 14px;
+		border: 1px solid @gray;
+		border-right: none;
+		-webkit-border-top-left-radius: 5px;
+		-webkit-border-bottom-left-radius: 5px;
+		-moz-border-top-left-radius: 5px;
+		-moz-border-bottom-left-radius: 5px;
+		-o-border-top-left-radius: 5px;
+		-o-border-bottom-left-radius: 5px;
+		border-top-left-radius: 5px;
+		border-bottom-left-radius: 5px;
+		color: @black !important;
+		padding: 10px;
+		outline: none;
 	}
 	input[type="submit"] {
 	  height: 37px;
@@ -1161,8 +1157,7 @@ form#mc-embedded-subscribe-form
 
 /*......................testimonies ticker */
 .tickercontainer { /* the outer div with the black border */
-width: 590px;
-height: 38px;
+.size(590px, 38px);
 margin: 20px 0 0 0; 
 padding: 0;
 overflow: hidden;
