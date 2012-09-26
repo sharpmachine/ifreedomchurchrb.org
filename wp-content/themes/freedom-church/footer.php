@@ -28,8 +28,8 @@
     <script src="<?php bloginfo('template_directory'); ?>/js/bootstrap-button.js"></script>
 
 	<!-- scripts concatenated and minified via ant build script-->
-	<script src="<?php bloginfo ('template_directory'); ?>/js/plugins.js"></script>
-	<script src="<?php bloginfo ('template_directory'); ?>/js/script.js"></script>
+	<script src="<?php bloginfo ('template_directory'); ?>/js/plugins-ck.js"></script>
+	<script src="<?php bloginfo ('template_directory'); ?>/js/script-ck.js"></script>
 
 <?php wp_footer(); ?>
 	</body>
