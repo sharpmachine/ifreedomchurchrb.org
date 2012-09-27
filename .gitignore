@@ -4,6 +4,7 @@ wp-config.php
 /wp-content/themes/project-theme/css/hashgrid.css
 # /wp-content/themes/project-theme/included
 /wp-content/uploads/_wpremote_backups/
+/wp-content/uploads/em-cache/
 /wp-content/w3tc/
 /wp-content/backup-db/
 .htaccess
