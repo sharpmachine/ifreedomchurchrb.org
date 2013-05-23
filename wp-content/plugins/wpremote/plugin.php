@@ -2,8 +2,8 @@
 
 /*
 Plugin Name: WP Remote
-Description: Manage your WordPress site with <a href="https://wpremote.com/">WP Remote</a>. Deactivate to clear your API Key.
-Version: 2.2.5
+Description: Manage your WordPress site with <a href="https://wpremote.com/">WP Remote</a>. <strong>Deactivate to clear your API Key.</strong>
+Version: 2.6
 Author: Human Made Limited
 Author URI: http://hmn.md/
 */
@@ -28,6 +28,9 @@ Author URI: http://hmn.md/
 define( 'WPRP_PLUGIN_SLUG', 'wpremote' );
 define( 'WPRP_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
+if ( ! defined( 'WPR_API_URL' ) )
+	define( 'WPR_API_URL', 'https://wpremote.com/api/json/' );
+
 // Don't activate on anything less than PHP 5.2.4
 if ( version_compare( phpversion(), '5.2.4', '<' ) ) {
 
@@ -39,11 +42,16 @@ if ( version_compare( phpversion(), '5.2.4', '<' ) ) {
 
 }
 
-require_once( WPRP_PLUGIN_PATH  .'/wprp.admin.php' );
+require_once( WPRP_PLUGIN_PATH . '/wprp.admin.php' );
+require_once( WPRP_PLUGIN_PATH . '/wprp.compatability.php' );
 
 // Backups require 3.1
-if ( version_compare( get_bloginfo( 'version' ), '3.1', '>=' ) && ! class_exists( 'WPR_HM_Backup' ) )
-	require( WPRP_PLUGIN_PATH . '/hm-backup/hm-backup.php' );
+if ( version_compare( get_bloginfo( 'version' ), '3.1', '>=' ) ) {
+
+	require_once( WPRP_PLUGIN_PATH . '/wprp.hm.backup.php' );
+	require_once( WPRP_PLUGIN_PATH . '/wprp.backups.php' );
+
+}
 
 // Don't include when doing a core update
 if ( empty( $_GET['action'] ) || $_GET['action'] != 'do-core-upgrade' ) :
@@ -96,7 +104,7 @@ if ( empty( $_GET['action'] ) || $_GET['action'] != 'do-core-upgrade' ) :
 
 	}
 
-		class WPRP_Core_Upgrader_Skin extends WP_Upgrader_Skin {
+	class WPRP_Core_Upgrader_Skin extends WP_Upgrader_Skin {
 
 		var $feedback;
 		var $error;
@@ -128,10 +136,9 @@ endif;
  */
 function wprp_catch_api_call() {
 
-	if ( empty( $_GET['wpr_api_key'] ) || ! urldecode( $_GET['wpr_api_key'] ) || ! isset( $_GET['actions'] ) )
+	if ( empty( $_POST['wpr_verify_key'] ) )
 		return;
 
-	require_once( WPRP_PLUGIN_PATH . '/wprp.backups.php' );
 	require_once( WPRP_PLUGIN_PATH . '/wprp.plugins.php' );
 	require_once( WPRP_PLUGIN_PATH . '/wprp.themes.php' );
 
@@ -142,11 +149,64 @@ function wprp_catch_api_call() {
 }
 add_action( 'init', 'wprp_catch_api_call', 1 );
 
+function wprp_plugin_update_check() {
+
+	$plugin_data = get_plugin_data( __FILE__ );
+
+	// define the plugin version
+	define( 'WPRP_VERSION', $plugin_data['Version'] );
+
+	// Fire the update action
+	if ( WPRP_VERSION !== get_option( 'wprp_plugin_version' ) )
+		wprp_update();
+
+}
+add_action( 'admin_init', 'wprp_plugin_update_check' );
+
+/**
+ * Run any update code and update the current version in the db
+ *
+ * @access public
+ * @return void
+ */
+function wprp_update() {
+
+	/**
+	 * Remove the old _wpremote_backups directory
+	 */
+	$uploads_dir = wp_upload_dir();
+
+	$old_wpremote_dir = trailingslashit( $uploads_dir['basedir'] ) . '_wpremote_backups';
+
+	if ( file_exists( $old_wpremote_dir ) )
+		WPRP_Backups::rmdir_recursive( $old_wpremote_dir );
+
+	// If BackUpWordPress isn't installed then lets just delete the whole backups directory
+	if ( ! defined( 'HMBKP_PLUGIN_PATH' ) && $path = get_option( 'hmbkp_path' ) ) {
+		
+		WPRP_Backups::rmdir_recursive( $path );
+
+		delete_option( 'hmbkp_path' );
+		delete_option( 'hmbkp_default_path' );
+		delete_option( 'hmbkp_plugin_version' );
+
+	}
+
+	// Update the version stored in the db
+	if ( get_option( 'wprp_plugin_version' ) !== WPRP_VERSION )
+		update_option( 'wprp_plugin_version', WPRP_VERSION );
+
+}
+
 function _wprp_upgrade_core()  {
-	
+
 	include_once ( ABSPATH . 'wp-admin/includes/admin.php' );
 	include_once ( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	include_once ( ABSPATH . 'wp-includes/update.php' );
+
+	// check for filesystem access
+	if ( ! _wpr_check_filesystem_access() )
+		return array( 'status' => 'error', 'error' => 'The filesystem is not writable with the supplied credentials' );
 
 	// force refresh
 	wp_version_check();
@@ -170,7 +230,7 @@ function _wprp_upgrade_core()  {
 		return $result;
 
 	global $wp_current_db_version, $wp_db_version;
-	
+
 	// we have to include version.php so $wp_db_version
 	// will take the version of the updated version of wordpress
 	require( ABSPATH . WPINC . '/version.php' );
@@ -179,3 +239,33 @@ function _wprp_upgrade_core()  {
 
 	return true;
 }
+
+function _wpr_check_filesystem_access() {
+
+	ob_start();
+	$success = request_filesystem_credentials( '' );
+	ob_end_clean();
+
+	return (bool) $success;
+}
+
+function _wpr_set_filesystem_credentials( $credentials ) {
+
+	if ( empty( $_GET['filesystem_details'] ) )
+		return $credentials;
+
+	$_credentials = array(
+		'username' => $_GET['filesystem_details']['credentials']['username'],
+		'password' => $_GET['filesystem_details']['credentials']['password'],
+		'hostname' => $_GET['filesystem_details']['credentials']['hostname'],
+		'connection_type' => $_GET['filesystem_details']['method']
+	);
+
+	// check whether the credentials can be used
+	if ( ! WP_Filesystem( $_credentials ) ) {
+		return $credentials;
+	}
+
+	return $_credentials;
+}
+add_filter( 'request_filesystem_credentials', '_wpr_set_filesystem_credentials' );

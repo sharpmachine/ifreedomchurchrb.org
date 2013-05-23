@@ -6,26 +6,34 @@ class EM_Coupons extends EM_Object {
 		//coupon admin select page
 		//coupon admin add/edit page
 		add_action('em_create_events_submenu',array('EM_Coupons', 'admin_menu'),10,1);
-		//meta box hook for adding coupons to booking info
-		add_action('em_events_admin_bookings_footer',array('EM_Coupons', 'admin_meta_box'),10,1);
-		add_action('em_event',array('EM_Coupons', 'em_event'),10,1);
-		add_filter('em_event_get_post',array('EM_Coupons', 'em_event_get_post'),10,2);
-		add_filter('em_event_save_meta',array('EM_Coupons', 'em_event_save_meta'),10,2);
 		//add field to booking form and ajax
-		add_action('em_booking_form_footer', array('EM_Coupons', 'em_booking_form_footer'),1,2);
-		//hook into booking submission to add discount and coupon info
-		add_filter('em_booking_get_post', array('EM_Coupons', 'em_booking_get_post'), 10, 2);
-		add_filter('em_booking_validate', array('EM_Coupons', 'em_booking_validate'), 10, 2);
-		add_filter('em_booking_save', array('EM_Coupons', 'em_booking_save'), 10, 2);
+		if( get_option('dbem_multiple_bookings') ){ //multiple bookings mode
+		    //add coupon field to checkout page booking form
+		    
+		}else{ //normal mode
+		    //add to any booking form
+			add_action('em_booking_form_footer', array('EM_Coupons', 'em_booking_form_footer'),1,2);
+			//meta box hook for adding coupons to booking info
+			add_action('em_events_admin_bookings_footer',array('EM_Coupons', 'admin_meta_box'),10,1);
+			add_action('em_event',array('EM_Coupons', 'em_event'),10,1);
+			add_filter('em_event_get_post',array('EM_Coupons', 'em_event_get_post'),10,2);
+			add_filter('em_event_save_meta',array('EM_Coupons', 'em_event_save_meta'),10,2);
+			//hook into booking submission to add discount and coupon info
+			add_filter('em_booking_get_post', array('EM_Coupons', 'em_booking_get_post'), 10, 2);
+			add_filter('em_booking_validate', array('EM_Coupons', 'em_booking_validate'), 10, 2);
+			add_filter('em_booking_save', array('EM_Coupons', 'em_booking_save'), 10, 2);
+		}
+		add_filter('em_booking_output_placeholder',array('EM_Coupons','placeholders'),1,3); //for email
 		//hook into paypal gateway
 		add_filter('em_gateway_paypal_get_paypal_vars', array('EM_Coupons', 'paypal_vars'), 10, 2);
 		//hook into price calculator
 		add_filter('em_booking_get_price', array('EM_Coupons', 'em_booking_get_price'), 10, 3);
+		add_filter('em_bookings_table_row_booking_price_ticket', array('EM_Coupons', 'em_booking_get_price'), 10, 3); //for ticket totals on csv exports split by ticket
 		//add coupon code info to individual booking
 		add_action('em_bookings_admin_ticket_totals_header', array('EM_Coupons', 'em_bookings_admin_ticket_totals_header'), 10, 2);
 		//add coupon info to CSV
-		add_action('em_csv_bookings_loop_after', array('EM_Coupons', 'em_csv_bookings_loop_after'),1,3); //show booking form and ticket summary
-		add_action('em_csv_bookings_headers', array('EM_Coupons', 'em_csv_bookings_headers'),1,1); //show booking form and ticket summary
+		add_action('em_bookings_table_cols_template', array('EM_Coupons', 'em_bookings_table_cols_template'),10,1);
+		add_filter('em_bookings_table_rows_col_coupon', array('EM_Coupons', 'em_bookings_table_rows_col_coupon'), 10, 3);
 		//add ajax response for coupon code queries
 		add_action('wp_ajax_coupon_check',array('EM_Coupons', 'coupon_check'));
 		add_action('wp_ajax_nopriv_coupon_check',array('EM_Coupons', 'coupon_check'));
@@ -67,11 +75,11 @@ class EM_Coupons extends EM_Object {
 				$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
 				$price = $EM_Coupon->apply_discount($price);
 			}
-			if( $add_tax === true || get_option('dbem_bookings_tax_auto_add') ){
+			if( $add_tax === true && !get_option('dbem_bookings_tax_auto_add') ){
 				$price = round($price * (1 + get_option('dbem_bookings_tax')/100),2);
 			}
 		}
-		return $price;
+		return apply_filters('em_coupons_em_booking_get_price', $price, $EM_Booking, $add_tax);
 	}
 	
 	/*
@@ -111,7 +119,7 @@ class EM_Coupons extends EM_Object {
 			}
 		}
 		$result = self::em_booking_validate($result, $EM_Booking); //validate here as well
-		return $result;
+		return apply_filters('em_coupons_em_booking_get_post', $result, $EM_Booking);
 	}
 	
 	function em_booking_validate($result, $EM_Booking){
@@ -125,7 +133,7 @@ class EM_Coupons extends EM_Object {
 				return false;
 			}
 		}
-		return $result;
+		return apply_filters('em_coupons_em_booking_validate', $result, $EM_Booking);
 	}
 	
 	function em_booking_save($result, $EM_Booking){
@@ -141,7 +149,7 @@ class EM_Coupons extends EM_Object {
 				$wpdb->insert(EM_META_TABLE, array('meta_value'=>1, 'object_id'=>$EM_Coupon->coupon_id, 'meta_key'=>'coupon-count'));
 			}
 		}
-		return $result;
+		return apply_filters('em_coupons_em_booking_save', $result, $EM_Booking);
 	}
 	
 	function paypal_vars($vars, $EM_Booking){
@@ -151,6 +159,49 @@ class EM_Coupons extends EM_Object {
 			$vars['discount_amount_cart'] = $discount;
 		}
 		return $vars;
+	}
+
+	/**
+	 * @param string $replace
+	 * @param EM_Booking $EM_Booking
+	 * @param string $full_result
+	 * @return string
+	 */
+	function placeholders($replace, $EM_Booking, $full_result){
+		if( empty($replace) || $replace == $full_result ){
+			if( $full_result == '#_BOOKINGCOUPON' ){
+				$replace = '';
+				if( !empty($EM_Booking->booking_meta['coupon']) ){
+					$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
+					$replace = $EM_Coupon->coupon_code.' - '.$EM_Coupon->get_discount_text();					
+				}
+			}elseif( $full_result == '#_BOOKINGCOUPONCODE' ){
+				$replace = '';
+				if( !empty($EM_Booking->booking_meta['coupon']) ){
+					$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
+					$replace = $EM_Coupon->coupon_code;					
+				}
+			}elseif( $full_result == '#_BOOKINGCOUPONDISCOUNT' ){
+				$replace = '';
+				if( !empty($EM_Booking->booking_meta['coupon']) ){
+					$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
+					$replace = $EM_Coupon->get_discount_text();					
+				}
+			}elseif( $full_result == '#_BOOKINGCOUPONNAME' ){
+				$replace = '';
+				if( !empty($EM_Booking->booking_meta['coupon']) ){
+					$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
+					$replace = $EM_Coupon->coupon_name;					
+				}
+			}elseif( $full_result == '#_BOOKINGCOUPONDESCRIPTION' ){
+				$replace = '';
+				if( !empty($EM_Booking->booking_meta['coupon']) ){
+					$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
+					$replace = $EM_Coupon->coupon_description;					
+				}
+			}
+		}
+		return $replace; //no need for a filter, use the em_booking_email_placeholders filter
 	}
 	
 	/*
@@ -305,7 +356,7 @@ class EM_Coupons extends EM_Object {
 			<?php _e('No coupons created yet.','em-pro'); ?>
 		<?php endif; ?>
 		<?php if(count($global_coupons) > 0): ?>
-			<p><em><?php _e('The following codes will be automatically available to this event as well')?></em></p> 
+			<p><em><?php _e('The following codes will be automatically available to this event as well','em-pro')?></em></p> 
 			<?php foreach($global_coupons as $EM_Coupon): /* @var $EM_Coupon EM_Coupon */ ?>
 				<p style="margin:0px 0px 5px 0px">
 					<?php echo '<strong>'.esc_html($EM_Coupon->coupon_code).'</strong> - '. esc_html($EM_Coupon->get_discount_text()); ?><br />
@@ -527,7 +578,7 @@ class EM_Coupons extends EM_Object {
 		//check that user can access this page
 		if( is_object($EM_Coupon) && !$EM_Coupon->can_manage('edit_locations','edit_others_locations') ){
 			?>
-			<div class="wrap"><h2><?php _e('Unauthorized Access','dbem'); ?></h2><p><?php echo sprintf(__('You do not have the rights to manage this %s.','dbem'),__('coupon','dbem')); ?></p></div>
+			<div class="wrap"><h2><?php _e('Unauthorized Access','dbem'); ?></h2><p><?php echo sprintf(__('You do not have the rights to manage this %s.','dbem'),__('coupon','em-pro')); ?></p></div>
 			<?php
 			return false;
 		}elseif( !is_object($EM_Coupon) ){
@@ -541,7 +592,7 @@ class EM_Coupons extends EM_Object {
 		$bookings_count = 0;
 		$EM_Bookings = array();
 		foreach($bookings as $booking_id){ 
-			$EM_Booking = new EM_Booking($booking_id);
+			$EM_Booking = em_get_booking($booking_id);
 			if( !empty($EM_Booking->booking_meta['coupon']) ){
 				$coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
 				if($EM_Coupon->coupon_code == $coupon->coupon_code && $EM_Coupon->coupon_id == $coupon->coupon_id){
@@ -648,7 +699,7 @@ class EM_Coupons extends EM_Object {
 		//check that user can access this page
 		if( is_object($EM_Coupon) && !$EM_Coupon->can_manage('edit_locations','edit_others_locations') ){
 			?>
-			<div class="wrap"><h2><?php _e('Unauthorized Access','dbem'); ?></h2><p><?php echo sprintf(__('You do not have the rights to manage this %s.','dbem'),__('coupon','dbem')); ?></p></div>
+			<div class="wrap"><h2><?php _e('Unauthorized Access','dbem'); ?></h2><p><?php echo sprintf(__('You do not have the rights to manage this %s.','dbem'),__('coupon','em-pro')); ?></p></div>
 			<?php
 			return false;
 		}elseif( !is_object($EM_Coupon) ){
@@ -683,7 +734,7 @@ class EM_Coupons extends EM_Object {
 					</tr>
 					<?php endif; ?>
 					<tr valign="top">
-						<th scope="row"><?php _e('Registerd Users Only?', 'em-pro') ?></th>
+						<th scope="row"><?php _e('Registered Users Only?', 'em-pro') ?></th>
 							<td><input type="checkbox" name="coupon_private" value="1" <?php if($EM_Coupon->coupon_private) echo 'checked="checked"'; ?> />
 							<br />
 							<em><?php _e('If checked, only logged in users will be able to use this coupon.','em-pro'); ?></em>
@@ -731,7 +782,7 @@ class EM_Coupons extends EM_Object {
 								<input type="text" class="em-date-input-loc em-date-end" />
 								<input type="hidden" class="em-date-input" name="coupon_end" value="<?php echo esc_attr(substr($EM_Coupon->coupon_end,0,10)); ?>" />
 								<br />
-								<em><?php _e('Coupons not be valid after this date.','em-pro'); ?></em>
+								<em><?php _e('Coupons will not be valid after this date.','em-pro'); ?></em>
 							</td>
 						</tr>
 					</tbody>
@@ -739,8 +790,8 @@ class EM_Coupons extends EM_Object {
 						<th scope="row"><?php _e('Discount Type', 'em-pro') ?></th>
 						<td>
 							<select name="coupon_type">
-								<option value="%" <?php echo ($EM_Coupon->coupon_type == '%')?'selected="selected"':''; ?>><?php _e('Percentage'); ?></option>
-								<option value="#" <?php echo ($EM_Coupon->coupon_type == '#')?'selected="selected"':''; ?>><?php _e('Fixed Amount'); ?></option>
+								<option value="%" <?php echo ($EM_Coupon->coupon_type == '%')?'selected="selected"':''; ?>><?php _e('Percentage','em-pro'); ?></option>
+								<option value="#" <?php echo ($EM_Coupon->coupon_type == '#')?'selected="selected"':''; ?>><?php _e('Fixed Amount', 'em-pro'); ?></option>
 							</select>
 							<br />
 						</td>
@@ -766,17 +817,17 @@ class EM_Coupons extends EM_Object {
 	 * CSV Functions
 	 */
 	
-	function em_csv_bookings_headers($headers){
-		$headers[] = __('Applicable Coupon');
-		return $headers; //no filter needed, use the em_csv_bookings_headers filter instead
+	function em_bookings_table_cols_template($template){
+		$template['coupon'] = __('Coupon Code','em-pro');
+		return $template;
 	}
 	
-	function em_csv_bookings_loop_after($file, $EM_Ticket_Booking, $EM_Booking){
+	function em_bookings_table_rows_col_coupon($val, $EM_Booking){
 		if( !empty($EM_Booking->booking_meta['coupon']) ){
-			$EM_Coupon = self::get_coupon($EM_Booking->booking_meta['coupon']['coupon_code'], $EM_Booking->get_event());
-			$file .= '"' .  preg_replace("/\n\r|\r\n|\n|\r/", ".     ", $EM_Coupon->coupon_name) . '",'; 
+			$EM_Coupon = new EM_Coupon($EM_Booking->booking_meta['coupon']);
+			$val = $EM_Coupon->coupon_code;
 		}
-		return $file; //no filter needed, use the em_csv_bookings_loop_after filter instead
+		return $val;
 	}
 
 	/* Overrides EM_Object method to apply a filter to result

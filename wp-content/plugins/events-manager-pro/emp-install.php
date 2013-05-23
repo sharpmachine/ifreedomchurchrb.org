@@ -2,11 +2,18 @@
 
 function emp_install() {
 	$old_version = get_option('em_pro_version');
-	if( EMP_VERSION > $old_version || $old_version == '' ){
+	if( EMP_VERSION > $old_version || $old_version == ''|| (is_multisite() && !EM_MS_GLOBAL && get_option('emp_ms_global_install')) ){
 	 	// Creates the tables + options if necessary
-	 	emp_create_transactions_table();
-		emp_create_coupons_table(); 
-		emp_create_reminders_table();
+		if( !EM_MS_GLOBAL || (EM_MS_GLOBAL && is_main_blog()) ){
+		    //hm....
+		 	emp_create_transactions_table();
+			emp_create_coupons_table(); 
+			emp_create_reminders_table();
+			emp_create_bookings_relationships_table();
+	 		delete_option('emp_ms_global_install'); //in case for some reason the user changed global settings
+	 	}else{
+	 		update_option('emp_ms_global_install',1); //in case for some reason the user changes global settings in the future
+	 	}
 		emp_add_options();
 		
 		//Upate Version	
@@ -112,8 +119,22 @@ function emp_create_reminders_table(){
 		  PRIMARY KEY  (queue_id)
 		) DEFAULT CHARSET=utf8 ;";
 	dbDelta($sql);
-	$array = array('coupon_owner','coupon_code');
 	emp_sort_out_table_nu_keys($table_name,array('event_id','booking_id'));
+}
+
+function emp_create_bookings_relationships_table(){
+	global  $wpdb;
+	require_once(ABSPATH . 'wp-admin/includes/upgrade.php'); 
+    $table_name = $wpdb->prefix.'em_bookings_relationships';
+	$sql = "CREATE TABLE ".$table_name." (
+		  booking_relationship_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		  event_id bigint(20) unsigned DEFAULT NULL,
+		  booking_id bigint(20) unsigned DEFAULT NULL,
+		  booking_main_id bigint(20) unsigned DEFAULT NULL,
+		  PRIMARY KEY  (booking_relationship_id)
+		) DEFAULT CHARSET=utf8 ;";
+	dbDelta($sql);
+	emp_sort_out_table_nu_keys($table_name,array('event_id','booking_id','booking_main_id'));
 }
 
 function emp_add_options() {
@@ -130,7 +151,7 @@ function emp_add_options() {
     	'dbem_country' => array ( 'label' => __('Country','dbem'), 'type' => 'dbem_country', 'fieldid'=>'dbem_country', 'required'=>1 ),
     	'dbem_phone' => array ( 'label' => __('Phone','dbem'), 'type' => 'dbem_phone', 'fieldid'=>'dbem_phone' ),
     	'dbem_fax' => array ( 'label' => __('Fax','dbem'), 'type' => 'dbem_fax', 'fieldid'=>'dbem_fax' ),
-	  	'textarea' => array ( 'label' => __('Comment','dbem'), 'type' => 'textarea', 'fieldid'=>'booking_comment' ),
+	  	'booking_comment' => array ( 'label' => __('Comment','dbem'), 'type' => 'textarea', 'fieldid'=>'booking_comment' ),
 	));
 	add_option('em_booking_form_error_required', __('Please fill in the field: %s','em-pro'));
     $new_fields = array(
@@ -147,6 +168,7 @@ function emp_add_options() {
 	add_option('em_user_fields', $new_fields);
 	$customer_fields = array('address' => 'dbem_address','address_2' => 'dbem_address_2','city' => 'dbem_city','state' => 'dbem_state','zip' => 'dbem_zip','country' => 'dbem_country','phone' => 'dbem_phone','fax' => 'dbem_fax','company' => 'dbem_company');
     add_option('emp_gateway_customer_fields', $customer_fields);
+    add_option('em_attendee_fields_enabled', defined('EM_ATTENDEES') && EM_ATTENDEES );
 	//Gateway Stuff
     add_option('dbem_emp_booking_form_reg_input', 1);
     add_option('dbem_emp_booking_form_reg_show', 1);
@@ -154,7 +176,7 @@ function emp_add_options() {
 	add_option('dbem_gateway_label', __('Pay With','em-pro'));
 	//paypal
 	add_option('em_paypal_option_name', __('PayPal', 'em-pro'));
-	add_option('em_paypal_form', '<img src="'.plugins_url('events-manager-pro/includes/images/paypal/paypal_info.png','events-manager').'" />');
+	add_option('em_paypal_form', '<img src="'.plugins_url('events-manager-pro/includes/images/paypal/paypal_info.png','events-manager').'" width="228" height="61" />');
 	add_option('em_paypal_booking_feedback', __('Please wait whilst you are redirected to PayPal to proceed with payment.','em-pro'));
 	add_option('em_paypal_booking_feedback_free', __('Booking successful.', 'dbem'));
 	add_option('em_paypal_button', 'http://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif');
@@ -170,12 +192,43 @@ function emp_add_options() {
 	//email reminders
 	add_option('dbem_cron_emails', 0);
 	add_option('dbem_emp_emails_reminder_subject', 'Reminder - #_EVENTNAME');
-	$email_footer = __('<br/><br/>-------------------------------<br/>Powered by Events Manager - http://wp-events-plugin.com','dbem');
-	$respondent_email_body_localizable = __("Dear #_BOOKINGNAME, <br/>This is a reminder about your #_BOOKINGSPACES space/spaces reserved for #_EVENTNAME.<br/>When : #_EVENTDATES @ #_EVENTTIMES<br/>Where : #_LOCATIONNAME - #_LOCATIONFULLLINE<br/>We look forward to seeing you there!<br/>Yours faithfully,<br/>#_CONTACTNAME",'dbem').$email_footer;
-	add_option('dbem_emp_emails_reminder_body', str_replace("<br/>", "\n\r", $respondent_email_body_localizable));
+	$email_footer = __('<br /><br />-------------------------------<br />Powered by Events Manager - http://wp-events-plugin.com','dbem');
+	$respondent_email_body_localizable = __("Dear #_BOOKINGNAME, <br />This is a reminder about your #_BOOKINGSPACES space/spaces reserved for #_EVENTNAME.<br />When : #_EVENTDATES @ #_EVENTTIMES<br />Where : #_LOCATIONNAME - #_LOCATIONFULLLINE<br />We look forward to seeing you there!<br />Yours faithfully,<br />#_CONTACTNAME",'dbem').$email_footer;
+	add_option('dbem_emp_emails_reminder_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
 	add_option('dbem_emp_emails_reminder_time', '12:00 AM');
 	add_option('dbem_emp_emails_reminder_days', 1);	
 	add_option('dbem_emp_emails_reminder_ical', 1);
+	//multiple bookings
+	add_option('dbem_multiple_bookings_feedback_added', __('Your booking was added to your shopping cart.'));
+	add_option('dbem_multiple_bookings_feedback_already_added', __('You have already booked a spot at this eventin your cart, please modify or delete your current booking.'));
+	add_option('dbem_multiple_bookings_feedback_no_bookings', __('You have not booked any events yet. Your cart is empty.','em-pro'));
+	add_option('dbem_multiple_bookings_feedback_loading_cart', __('Loading Cart Contents...','em-pro'));
+	add_option('dbem_multiple_bookings_feedback_empty_cart', __('Are you sure you want to empty your cart?','em-pro'));
+	add_option('dbem_multiple_bookings_submit_button', __('Place Order','em_pro'));
+	//multiple bookings - emails
+	add_option('dbem_multiple_bookings_contact_email_subject', __('New Booking','em-pro'));
+	$respondent_email_body_localizable = __("#_BOOKINGNAME (#_BOOKINGEMAIL) has made a booking: <br />#_BOOKINGSUMMARY",'dbem').$email_footer;
+	add_option('dbem_multiple_bookings_contact_email_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
+	
+	add_option('dbem_multiple_bookings_contact__email_cancelled_subject', __('Booking Cancelled','em-pro'));
+	$respondent_email_body_localizable = __("#_BOOKINGNAME (#_BOOKINGEMAIL) has cancelled a booking: <br />#_BOOKINGSUMMARY",'dbem').$email_footer;
+	add_option('dbem_multiple_bookings_contact__email_cancelled_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
+	
+	add_option('dbem_multiple_bookings_email_confirmed_subject', __('Booking Confirmed','em-pro'));
+	$respondent_email_body_localizable = __("Dear #_BOOKINGNAME, <br />Your booking has been confirmed. <br />Below is a summary of your booking: <br />#_BOOKINGSUMMARY <br />We look forward to seeing you there!",'dbem').$email_footer;
+	add_option('dbem_multiple_bookings_email_confirmed_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
+	
+	add_option('dbem_multiple_bookings_email_pending_subject', __('Booking Pending','em-pro'));
+	$respondent_email_body_localizable = __("Dear #_BOOKINGNAME, <br />Your booking is currently pending approval by our administrators. Once approved you will receive another confirmation email. <br />Below is a summary of your booking: <br />#_BOOKINGSUMMARY",'dbem').$email_footer;
+	add_option('dbem_multiple_bookings_email_pending_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
+	
+	add_option('dbem_multiple_bookings_email_rejected_subject', __('Booking Rejected','em-pro'));
+	$respondent_email_body_localizable = __("Dear #_BOOKINGNAME, <br />Your requested booking has been rejected. <br />Below is a summary of your booking: <br />#_BOOKINGSUMMARY",'dbem').$email_footer;
+	add_option('dbem_multiple_bookings_email_rejected_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
+	
+	add_option('dbem_multiple_bookings_email_cancelled_subject', __('Booking Cancelled','em-pro'));
+	$respondent_email_body_localizable = __("Dear #_BOOKINGNAME, <br />Your requested booking has been cancelled. <br />Below is a summary of your booking: <br />#_BOOKINGSUMMARY",'dbem').$email_footer;
+	add_option('dbem_multiple_bookings_email_cancelled_body', str_replace("<br />", "\n\r", $respondent_email_body_localizable));
 	
 	//Version updates
 	if( get_option('em_pro_version') ){ //upgrade, so do any specific version updates
@@ -211,6 +264,28 @@ function emp_add_options() {
 				update_option('em_paypal_button',get_option('em_paypal_button_text')); //merge offline quick pay button option into one
 			}
 		}
+		if( get_option('em_pro_version') < 2.243 ){ //fix badly stored user dates and times
+			$EM_User_Form = EM_User_Fields::get_form();
+			foreach($EM_User_Form->form_fields as $field_id => $field){
+			    if( in_array($field['type'], array('date','time')) ){
+			        //search the user meta table and modify all occorunces of this value if the format isn't correct
+			        $meta_results = $wpdb->get_results("SELECT umeta_id, meta_value FROM {$wpdb->usermeta} WHERE meta_key='".$field_id."'", ARRAY_A);
+			        foreach($meta_results as $meta_result){
+			            if( is_serialized($meta_result['meta_value']) ){
+			                $meta_value = unserialize($meta_result['meta_value']);
+				            if( is_array($meta_value) && !empty($meta_value['start']) ){
+				                $new_value = $meta_value['start'];
+				                if( !empty($meta_value['end']) ){
+				                	$new_value .= ','.$meta_value['end'];
+				                }
+				                //update this user meta with the new value
+				                $wpdb->query("UPDATE {$wpdb->usermeta} SET meta_value='$new_value' WHERE umeta_id='{$meta_result['umeta_id']}'");
+				            }
+			            } 
+			        }
+			    }
+			}
+		}		
 	}else{
 		//Booking form stuff only run on install
 		$insert_result = $wpdb->insert(EM_META_TABLE, array('meta_value'=>serialize($booking_form_data), 'meta_key'=>'booking-form','object_id'=>0));

@@ -86,7 +86,7 @@ class EM_Coupon extends EM_Object {
 		$this->coupon_max = ( !empty($_POST['coupon_max']) && is_numeric($_POST['coupon_max']) ) ? $_POST['coupon_max']:'';
 		$this->coupon_type = ( !empty($_POST['coupon_type']) ) ? $_POST['coupon_type']:'';
 		$this->coupon_discount = ( !empty($_POST['coupon_discount']) ) ? $_POST['coupon_discount']:'';
-		if( $this->coupon_type == '%' && !empty($this->coupon_discount) ){ $this->coupon_discount = absint($this->coupon_discount); }
+		if( !empty($this->coupon_discount) && $this->coupon_discount < 0 ){ $this->coupon_discount = $this->coupon_discount * -1 ; } //no negatives
 		$this->coupon_eventwide = ( !empty($_POST['coupon_eventwide']) ) ? 1:0;
 		$this->coupon_sitewide = ( !empty($_POST['coupon_sitewide']) ) ? 1:0;
 		$this->coupon_private = ( !empty($_POST['coupon_private']) ) ? 1:0;
@@ -163,7 +163,7 @@ class EM_Coupon extends EM_Object {
 				if( $price < 0 ) $price = 0; //no negative values
 				break;
 		}
-		return $price;
+		return apply_filters('em_coupon_apply_discount', $price, $this);
 	}
 	
 	function get_discount($price){

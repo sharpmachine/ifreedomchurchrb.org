@@ -8,35 +8,35 @@ class EM_Gateway_Paypal extends EM_Gateway {
 	var $status_txt = 'Awaiting PayPal Payment';
 	var $button_enabled = true;
 	var $payment_return = true;
+	var $count_pending_spaces = false;
+	var $supports_multiple_bookings = true;
 
 	/**
 	 * Sets up gateaway and adds relevant actions/filters 
 	 */
 	function __construct() {
+		//Booking Interception
+	    if( $this->is_active() && absint(get_option('em_'.$this->gateway.'_booking_timeout')) > 0 ){
+	        $this->count_pending_spaces = true;
+	    }
 		parent::__construct();
 		$this->status_txt = __('Awaiting PayPal Payment','em-pro');
 		if($this->is_active()) {
-			//Booking Interception
-			if ( absint(get_option('em_'.$this->gateway.'_booking_timeout')) > 0 ){
-				//Modify spaces calculations only if bookings are set to time out, in case pending spaces are set to be reserved.
-				add_filter('em_bookings_get_pending_spaces', array(&$this, 'em_bookings_get_pending_spaces'),1,2);
-			}
 			add_action('em_gateway_js', array(&$this,'em_gateway_js'));
 			//Gateway-Specific
 			add_action('em_template_my_bookings_header',array(&$this,'say_thanks')); //say thanks on my_bookings page
 			add_filter('em_bookings_table_booking_actions_4', array(&$this,'bookings_table_actions'),1,2);
 			add_filter('em_my_bookings_booking_actions', array(&$this,'em_my_bookings_booking_actions'),1,2);
 			//set up cron
-			$timestamp = wp_next_scheduled('emp_cron_hook');
+			$timestamp = wp_next_scheduled('emp_paypal_cron');
 			if( absint(get_option('em_paypal_booking_timeout')) > 0 && !$timestamp ){
-				$result = wp_schedule_event(time(),'em_minute','emp_cron_hook');
+				$result = wp_schedule_event(time(),'em_minute','emp_paypal_cron');
 			}elseif( !$timestamp ){
-				wp_unschedule_event($timestamp, 'emp_cron_hook');
+				wp_unschedule_event($timestamp, 'emp_paypal_cron');
 			}
 		}else{
 			//unschedule the cron
-			$timestamp = wp_next_scheduled('emp_cron_hook');
-			wp_unschedule_event($timestamp, 'emp_cron_hook');			
+			wp_clear_scheduled_hook('emp_paypal_cron');			
 		}
 	}
 	
@@ -45,21 +45,6 @@ class EM_Gateway_Paypal extends EM_Gateway {
 	 * Booking Interception - functions that modify booking object behaviour
 	 * --------------------------------------------------
 	 */
-	
-	/**
-	 * Modifies pending spaces calculations to include paypal bookings, but only if PayPal bookings are set to time-out (i.e. they'll get deleted after x minutes), therefore can be considered as 'pending' and can be reserved temporarily.
-	 * @param integer $count
-	 * @param EM_Bookings $EM_Bookings
-	 * @return integer
-	 */
-	function em_bookings_get_pending_spaces($count, $EM_Bookings){
-		foreach($EM_Bookings->bookings as $EM_Booking){
-			if($EM_Booking->booking_status == $this->status && $this->uses_gateway($EM_Booking)){
-				$count += $EM_Booking->get_spaces();
-			}
-		}
-		return $count;
-	}
 	
 	/**
 	 * Intercepts return data after a booking has been made and adds paypal vars, modifies feedback message.
@@ -92,7 +77,7 @@ class EM_Gateway_Paypal extends EM_Gateway {
 	function booking_form_feedback_fallback( $feedback ){
 		global $EM_Booking;
 		if( is_object($EM_Booking) ){
-			$feedback .= "<br />" . __('Please click the following button to proceed to PayPal.','dbem'). $this->em_my_bookings_booking_actions('',$EM_Booking);
+			$feedback .= "<br />" . __('To finalize your booking, please click the following button to proceed to PayPal.','em-pro'). $this->em_my_bookings_booking_actions('',$EM_Booking);
 		}
 		return $feedback;
 	}
@@ -243,67 +228,38 @@ class EM_Gateway_Paypal extends EM_Gateway {
 		// PayPal IPN handling code
 		if ((isset($_POST['payment_status']) || isset($_POST['txn_type'])) && isset($_POST['custom'])) {
 			
-			if (get_option( $this->gateway . "_status" ) == 'live') {
-				$domain = 'https://www.paypal.com';
+		    //Verify IPN request
+			if (get_option( 'em_'. $this->gateway . "_status" ) == 'live') {
+				$domain = 'https://www.paypal.com/cgi-bin/webscr';
 			} else {
-				$domain = 'https://www.sandbox.paypal.com';
+				$domain = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
 			}
 
 			$req = 'cmd=_notify-validate';
 			if (!isset($_POST)) $_POST = $HTTP_POST_VARS;
 			foreach ($_POST as $k => $v) {
 				if (get_magic_quotes_gpc()) $v = stripslashes($v);
-				$req .= '&' . $k . '=' . $v;
+				$req .= '&' . $k . '=' . urlencode($v);
 			}
-
-			$header = 'POST /cgi-bin/webscr HTTP/1.0' . "\r\n"
-					. 'Content-Type: application/x-www-form-urlencoded' . "\r\n"
-					. 'Content-Length: ' . strlen($req) . "\r\n"
-					. "\r\n";
-
+			
 			@set_time_limit(60);
-			if (false && $conn = @fsockopen($domain, 80, $errno, $errstr, 30)) {
-				fputs($conn, $header . $req);
-				socket_set_timeout($conn, 30);
 
-				$response = '';
-				$close_connection = false;
-				while (true) {
-					if (feof($conn) || $close_connection) {
-						fclose($conn);
-						break;
-					}
-
-					$st = @fgets($conn, 4096);
-					if ($st === false) {
-						$close_connection = true;
-						continue;
-					}
-
-					$response .= $st;
-				}
-
-				$error = '';
-				$lines = explode("\n", str_replace("\r\n", "\n", $response));
-				// looking for: HTTP/1.1 200 OK
-				if (count($lines) == 0) $error = 'Response Error: Header not found';
-				else if (substr($lines[0], -7) != ' 200 OK') $error = 'Response Error: Unexpected HTTP response';
-				else {
-					// remove HTTP header
-					while (count($lines) > 0 && trim($lines[0]) != '') array_shift($lines);
-
-					// first line will be empty, second line will have the result
-					if (count($lines) < 2) $error = 'Response Error: No content found in transaction response';
-					else if (strtoupper(trim($lines[1])) != 'VERIFIED') $error = 'Response Error: Unexpected transaction response';
-				}
-
-				if ($error != '') {
-					echo $error;
-					//fwrite($log,"\n".date('[Y-m-d H:s:i]').' Exiting, PP not verified.');
-					//fclose($log);
-					exit;
-				}
+			//add a CA certificate so that SSL requests always go through
+			add_action('http_api_curl','EM_Gateway_Paypal::payment_return_local_ca_curl',10,1);
+			//using WP's HTTP class
+			$ipn_verification_result = wp_remote_get($domain.'?'.$req);	
+			remove_action('http_api_curl','EM_Gateway_Paypal::payment_return_local_ca_curl',10,1);
+			
+			if ( !is_wp_error($ipn_verification_result) && $ipn_verification_result['body'] == 'VERIFIED' ) {
+				//log ipn request if needed, then move on
+				EM_Pro::log( $_POST['payment_status']." successfully received for {$_POST['mc_gross']} {$_POST['mc_currency']} (TXN ID {$_POST['txn_id']}) - Custom Info: {$_POST['custom']}", 'paypal');
+			}else{
+			    //log error if needed, send error header and exit
+				EM_Pro::log( array('IPN Verification Error', 'WP_Error'=> $ipn_verification_result, '$_POST'=> $_POST), 'paypal' );
+			    header('HTTP/1.0 502 Bad Gateway');
+			    exit;
 			}
+			//if we get past this, then the IPN went ok
 			
 			// handle cases that the system must ignore
 			$new_status = false;
@@ -314,7 +270,7 @@ class EM_Gateway_Paypal extends EM_Gateway {
 			$custom_values = explode(':',$_POST['custom']);
 			$booking_id = $custom_values[0];
 			$event_id = !empty($custom_values[1]) ? $custom_values[1]:0;
-			$EM_Booking = new EM_Booking($booking_id);
+			$EM_Booking = em_get_booking($booking_id);
 			if( !empty($EM_Booking->booking_id) && count($custom_values) == 2 ){
 				//booking exists
 				$EM_Booking->manage_override = true; //since we're overriding the booking ourselves.
@@ -329,16 +285,7 @@ class EM_Gateway_Paypal extends EM_Gateway {
 					case 'Processed':
 						// case: successful payment
 						$this->record_transaction($EM_Booking, $amount, $currency, $timestamp, $_POST['txn_id'], $_POST['payment_status'], '');
-				
-						//get booking metadata
-						$user_data = array();
-						if( !empty($EM_Booking->booking_meta['registration']) && is_array($EM_Booking->booking_meta['registration']) ){
-							foreach($EM_Booking->booking_meta['registration'] as $fieldid => $field){
-								if( trim($field) !== '' ){
-									$user_data[$fieldid] = $field;
-								}
-							}
-						}
+
 						if( $_POST['mc_gross'] >= $EM_Booking->get_price(false, false, true) && (!get_option('em_'.$this->gateway.'_manual_approval', false) || !get_option('dbem_bookings_approval')) ){
 							$EM_Booking->approve(true, true); //approve and ignore spaces
 						}else{
@@ -449,6 +396,14 @@ Events Manager
 		}
 	}
 	
+	/**
+	 * Fixes SSL issues with wamp and outdated server installations combined with curl requests by forcing a custom pem file, generated from - http://curl.haxx.se/docs/caextract.html
+	 * @param resource $handle
+	 */
+	public static function payment_return_local_ca_curl( $handle ){
+	    curl_setopt($handle, CURLOPT_CAINFO, dirname(__FILE__).DIRECTORY_SEPARATOR.'gateway.paypal.pem');
+	}
+	
 	/*
 	 * --------------------------------------------------
 	 * Gateway Settings Functions
@@ -499,28 +454,8 @@ Events Manager
 			  </td>
 		  </tr>
 		  <tr valign="top">
-			  <th scope="row"><?php _e('PayPal Site', 'em-pro') ?></th>
-			  <td>
-				  <select name="paypal_site">
-				  <?php
-				      $paypal_site = get_option('em_'. $this->gateway . "_site" );
-				      $sel_locale = empty($paypal_site) ? 'US' : $paypal_site;
-				      $locales = array('AU'	=> 'Australia', 'AT'	=> 'Austria', 'BE'	=> 'Belgium', 'CA'	=> 'Canada', 'CN'	=> 'China', 'FR'	=> 'France', 'DE'	=> 'Germany', 'HK'	=> 'Hong Kong', 'IT'	=> 'Italy', 'MX'	=> 'Mexico', 'NL'	=> 'Netherlands', 'NZ'	=>	'New Zealand', 'PL'	=> 'Poland', 'SG'	=> 'Singapore', 'ES'	=> 'Spain', 'SE'	=> 'Sweden', 'CH'	=> 'Switzerland', 'GB'	=> 'United Kingdom', 'US'	=> 'United States');
-		
-				      foreach ($locales as $key => $value) {
-							echo '<option value="' . esc_attr($key) . '"';
-				 			if($key == $sel_locale) echo 'selected="selected"';
-				 			echo '>' . esc_html($value) . '</option>' . "\n";
-				      }
-				  ?>
-				  </select>
-				  <br />
-				  <?php //_e('Format: 00.00 - Ex: 1.25', 'supporter') ?>
-			  </td>
-		  </tr>
-		  <tr valign="top">
 			  <th scope="row"><?php _e('Paypal Currency', 'em-pro') ?></th>
-			  <td><?php echo esc_html(get_option('dbem_bookings_currency','USD')); ?><br /><i><?php echo sprintf(__('Set your currency in the <a href="%s">settings</a> page.','dbem'),EM_ADMIN_URL.'&amp;page=events-manager-options'); ?></i></td>
+			  <td><?php echo esc_html(get_option('dbem_bookings_currency','USD')); ?><br /><i><?php echo sprintf(__('Set your currency in the <a href="%s">settings</a> page.','dbem'),EM_ADMIN_URL.'&amp;page=events-manager-options#bookings'); ?></i></td>
 		  </tr>
 		  
 		  <tr valign="top">
@@ -529,39 +464,8 @@ Events Manager
 			  	<select name="paypal_lc">
 			  		<option value=""><?php _e('Default','em-pro'); ?></option>
 				  <?php
-					$ccodes = array(
-						'AU' => 'Australia',
-						'AT' => 'Austria',
-						'BE' => 'Belgium',
-						'BR' => 'Brazil',
-						'CA' => 'Canada',
-						'CH' => 'Switzerland',
-						'CN' => 'China',
-						'DE' => 'Germany',
-						'ES' => 'Spain',
-						'GB' => 'United Kingdom',
-						'FR' => 'France',
-						'IT' => 'Italy',
-						'NL' => 'Netherlands',
-						'PL' => 'Poland',
-						'PT' => 'Portugal',
-						'RU' => 'Russia',
-						'US' => 'United States',
-						'da_DK' => 'Danish (for Denmark only)',
-						'he_IL' => 'Hebrew (all)',
-						'id_ID' => 'Indonesian (for Indonesia only)',
-						'jp_JP' => 'Japanese (for Japan only)',
-						'no_NO' => 'Norwegian (for Norway only)',
-						'pt_BR' => 'Brazilian Portuguese (for Portugal and Brazil only)',
-						'ru_RU' => 'Russian (for Lithuania, Latvia, and Ukraine only)',
-						'sv_SE' => 'Swedish (for Sweden only)',
-						'th_TH' => 'Thai (for Thailand only)',
-						'tr_TR' => 'Turkish (for Turkey only)',
-						'zh_CN' => 'Simplified Chinese (for China only)',
-						'zh_HK' => 'Traditional Chinese (for Hong Kong only)',
-						'zh_TW' => 'Traditional Chinese (for Taiwan only)'
-					);
-					$paypal_lc = get_option('em_'.$this->gateway.'_lc');
+					$ccodes = em_get_countries();
+					$paypal_lc = get_option('em_'.$this->gateway.'_lc', 'US');
 					foreach($ccodes as $key => $value){
 						if( $paypal_lc == $key ){
 							echo '<option value="'.$key.'" selected="selected">'.$value.'</option>';
@@ -687,5 +591,5 @@ function em_gateway_paypal_booking_timeout(){
 		}
 	}
 }
-add_action('emp_cron_hook', 'em_gateway_paypal_booking_timeout');
+add_action('emp_paypal_cron', 'em_gateway_paypal_booking_timeout');
 ?>

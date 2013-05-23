@@ -34,15 +34,15 @@ class EM_Updates {
 	}
 	
 	function admin_notices(){
-		if( is_super_admin() ){
-			if( !self::check_api_key() && !empty($_REQUEST['page']) && ('events-manager-options' == $_REQUEST['page']) && !self::check_api_key(true) ){
+		if( is_super_admin() && !empty($_REQUEST['page']) && ('events-manager-options' == $_REQUEST['page']) ){
+			if( !self::check_api_key() ){
 				?>
 				<div id="message" class="updated">
 					<p><?php echo sprintf(__('To access automatic updates, you must update your <a href="%s">Membership Key</a> for Events Mananager Pro <a href="#pro-api">here</a>. Only admins see this message.','em-pro'), 'http://wp-events-plugin.com/wp-admin/profile.php'); ?></p>
 				</div>
 				<?php
 			}
-			if( !empty($_REQUEST['page']) && 'events-manager-options' == $_REQUEST['page'] && defined('EMP_DEV_UPDATES') && EMP_DEV_UPDATES ){
+			if( defined('EMP_DEV_UPDATES') && EMP_DEV_UPDATES ){
 				?>
 				<div id="message" class="updated">
 					<p><?php echo sprintf(__('Dev Mode active: Just a friendly reminder that you have added %s to your wp-config.php file. Only admins see this message, and it will go away when you remove that line.','em-pro'),'<code>define(\'EMP_DEV_UPDATES\',true);</code>'); ?></p>
@@ -78,7 +78,7 @@ class EM_Updates {
 		if( is_super_admin() ){
 		?>
 			<a name="pro-api"></a>
-			<div  class="postbox " >
+			<div  class="postbox " id="em-opt-pro-key" >
 			<div class="handlediv" title="<?php __('Click to toggle', 'dbem'); ?>"><br /></div><h3 class='hndle'><span><?php _e ( 'Pro Membership Key', 'em-pro' ); ?> </span></h3>
 			<div class="inside">
 				<table class='form-table' <?php echo ( $api ) ? 'style="background-color:#ffece8;"':'' ?>>
@@ -160,7 +160,7 @@ class EM_Updates {
 			return true;
 		}else{
 			//call to see if this key is valid
-			if( (is_object($result) && $result->valid === false) || $force ){
+			if( !is_object($result) || $force ){
 				//recreate result
 				$result = new stdClass();
 				$result->valid = false;			    
@@ -184,9 +184,9 @@ class EM_Updates {
 			   		set_site_transient('dbem_pro_api_key_check',$result,60*60*24);
 			    }else{
 			    	set_site_transient('dbem_pro_api_key_check',$response,60*60*24);
-			    }
-			    return $result->valid; 
+			    } 
 			}
+			return $result->valid;
 		}
 		return false;
 	}
@@ -218,7 +218,7 @@ class EM_Updates {
 	    
 	    // If response is false, don't alter the transient
 	    if( self::check_response($response) && version_compare($transient->checked[EMP_SLUG], $response->new_version) < 0) {
-	        if( !self::check_api_key() ){
+	        if( !self::check_api_key(true) ){
 	        	$response->package = '';
 	        }
 	    	$transient->response[EMP_SLUG] = $response;
@@ -231,7 +231,7 @@ class EM_Updates {
 	function info( $false, $action, $args ) {
 	
 	    // Check if this plugins API is about this plugin
-	    if( $args->slug != EMP_SLUG ) {
+	    if( $args->slug != 'events-manager-pro' ) {
 	        return false;
 	    }
 	        
@@ -243,7 +243,7 @@ class EM_Updates {
 	        'version' => $transient->checked[EMP_SLUG],
 	    );	
 	    //request the latest dev version
-	    if( defined('EMP_DEV_UPDATES') && EMP_DEV_UPDATES ){
+	    if( (defined('EMP_DEV_UPDATES') && EMP_DEV_UPDATES) || get_option('dbem_pro_dev_updates') || get_option('em_check_dev_version') ){
 	    	$args['dev_version'] = 1;
 	    }	
 	    

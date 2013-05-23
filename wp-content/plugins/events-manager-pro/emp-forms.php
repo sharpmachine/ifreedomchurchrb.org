@@ -8,7 +8,7 @@ class EM_Forms {
 	}
 	
 	function admin_menu($plugin_pages){
-		$plugin_pages[] = add_submenu_page('edit.php?post_type='.EM_POST_TYPE_EVENT, __('Forms Editor','em-pro'),__('Forms Editor','em-pro'),'activate_plugins','events-manager-forms-editor',array('EM_Forms','admin_page'));
+		$plugin_pages[] = add_submenu_page('edit.php?post_type='.EM_POST_TYPE_EVENT, __('Forms Editor','em-pro'),__('Forms Editor','em-pro'),get_option('dbem_capability_forms_editor', 'list_users'),'events-manager-forms-editor',array('EM_Forms','admin_page'));
 		return $plugin_pages; //use wp action/filters to mess with the menus
 	}
 	
@@ -24,10 +24,10 @@ class EM_Forms {
 	}
 	
 	function admin_options(){
-		if( current_user_can('activate_plugins') ){
+		if( current_user_can('list_users') ){
 		?>
 			<a name="pro-forms"></a>
-			<div  class="postbox " >
+			<div  class="postbox " id="em-opt-pro-booking-form-options" >
 			<div class="handlediv" title="<?php __('Click to toggle', 'dbem'); ?>"><br /></div><h3 class='hndle'><span><?php _e ( 'PRO Booking Form Options', 'em-pro' ); ?> </span></h3>
 			<div class="inside">
 				<table class='form-table'>
@@ -52,7 +52,7 @@ class EM_Form extends EM_Object {
 	public $form_name = 'Default';
 	public $field_values = array();
 	public $user_fields = array();
-	protected $core_user_fields = array(
+	public $core_user_fields = array(
 		'name' => 'Name',
 		'user_login' => 'Username Login',
 		'user_email' => 'E-mail (required)',
@@ -88,6 +88,7 @@ class EM_Form extends EM_Object {
 	}
 	
 	function get_post( $validate = true ){
+	    $custom_user_fields = EM_User_Fields::get_form()->form_fields;
 		foreach($this->form_fields as $field){
 		    $fieldid = $field['fieldid'];
 			$value = '';
@@ -95,21 +96,28 @@ class EM_Form extends EM_Object {
 				if( !is_array($_REQUEST[$fieldid])){
 					$this->field_values[$fieldid] = wp_kses_data(stripslashes($_REQUEST[$fieldid]));
 				}elseif( is_array($_REQUEST[$fieldid])){
-					$this->field_values[$fieldid] = $_REQUEST[$fieldid];
+				    $array = array();
+				    foreach( $_REQUEST[$fieldid] as $key => $array_value ){
+				        $array[$key] = wp_kses_data(stripslashes($array_value));
+				    }
+					$this->field_values[$fieldid] = $array;
 				}
 			}
+			//if this is a custom user field, change $filed to the original field so the right date/time info is retreived
+	    	if( array_key_exists($field['type'], $this->custom_user_fields) && array_key_exists($field['fieldid'], $custom_user_fields) ){
+	    	    $field = $custom_user_fields[$field['fieldid']];
+	    	}
 			//dates and time are special
-			if( in_array($field['type'], array('date','time')) ){
+			if( in_array( $field['type'], array('date','time')) ){
 				if( !empty($_REQUEST[$fieldid]['start']) ){
-					$this->field_values[$fieldid] = $_REQUEST[$fieldid]['start'];
-				}
-				if( $field['options_'.$field['type'].'_range'] && !empty($_REQUEST[$fieldid]['end']) ){
-					$this->field_values[$fieldid] .= ','. $_REQUEST[$fieldid]['end'];
+					$this->field_values[$fieldid] = wp_kses_data($_REQUEST[$fieldid]['start']);
+					if( $field['options_'.$field['type'].'_range'] && !empty($_REQUEST[$fieldid]['end']) ){
+						$this->field_values[$fieldid] .= ','. wp_kses_data($_REQUEST[$fieldid]['end']);
+					}
+				}else{
+				    $this->field_values[$fieldid] = '';
 				}
 			}
-		}
-		if( $validate ){
-			return $this->validate();
 		}
 		return true;
 	}
@@ -119,39 +127,62 @@ class EM_Form extends EM_Object {
 	}
 	
 	function get_formatted_value( $field, $field_value ){
+		//FIX FOR BUG IN 2.2.5.4 and earlier for bookings using use no-user-mode
+		if( in_array($field['type'], array('time','date')) ){
+			if( is_array($field_value) && !empty($field_value['start']) ){
+				$temp_val = $field_value['start'];
+				if( !empty($field_value['end']) ){
+					$temp_val .= ','.$field_value['start'];
+				}
+				$field_value = $temp_val;
+			}elseif( is_array($field_value) && empty($field_value['start']) ){
+			    $field_value = 'n/a'; //fix for empty value saves in 2.2.8
+			}
+		}
+		//output formatted value for special fields
 		switch( $field['type'] ){
 			case 'checkbox':
 				$field_value = ($field_value) ? __('Yes','dbem'):__('No','dbem');
 				break;
 			case 'date':
 			    //split ranges (or create single array) and format, then re-implode
-				$date_format = ( get_option('dbem_date_format') ) ? get_option('dbem_date_format'):get_option('date_format');
-			    $field_values = explode(',', $field_value);
-			    foreach($field_values as $key => $value){
-					$field_values[$key] = date($date_format, strtotime($value));
-				}
-			    $field_value = implode(',', $field_values);
-			    //set seperator and replace the comma
-				$seperator = empty($field['options_date_range_seperator']) ? ' - ': $field['options_date_range_seperator'];
-				$field_value = str_replace(',',' '.$seperator.' ', $field_value);
+			    if( $field_value != 'n/a' ){
+					$date_format = ( get_option('dbem_date_format') ) ? get_option('dbem_date_format'):get_option('date_format');
+				    $field_values = explode(',', $field_value);
+				    foreach($field_values as $key => $value){
+						$field_values[$key] = date($date_format, strtotime($value));
+					}
+				    $field_value = implode(',', $field_values);
+				    //set seperator and replace the comma
+					$seperator = empty($field['options_date_range_seperator']) ? ' - ': $field['options_date_range_seperator'];
+					$field_value = str_replace(',',' '.$seperator.' ', $field_value);
+			    }
 				break;
 			case 'time':
 			    //split ranges (or create single array) and format, then re-implode
-				$time_format = ( get_option('dbem_time_format') ) ? get_option('dbem_time_format'):get_option('time_format');
-			    $field_values = explode(',', $field_value);
-			    foreach($field_values as $key => $value){
-					$field_values[$key] = date($time_format, strtotime('2010-01-01 '.$value));
+			    if( $field_value != 'n/a' ){
+					$time_format = ( get_option('dbem_time_format') ) ? get_option('dbem_time_format'):get_option('time_format');
+				    $field_values = explode(',', $field_value);
+				    foreach($field_values as $key => $value){
+						$field_values[$key] = date($time_format, strtotime('2010-01-01 '.$value));
+					}
+				    $field_value = implode(',', $field_values);
+					//set seperator and replace the comma
+					$seperator = empty($field['options_time_range_seperator']) ? ' - ': $field['options_time_range_seperator'];
+					$field_value = str_replace(',',' '.$seperator.' ', $field_value);
 				}
-			    $field_value = implode(',', $field_values);
-				//set seperator and replace the comma
-				$seperator = empty($field['options_time_range_seperator']) ? ' - ': $field['options_time_range_seperator'];
-				$field_value = str_replace(',',' '.$seperator.' ', $field_value);
 				break;
 			case 'booking_comment':
 				if( $field_value == 'n/a' && !empty($EM_Booking->booking_comment) ){ $field_value = $EM_Booking->booking_comment; }
 				break;
+			case 'country':
+				if( $field_value != 'n/a' ){ 
+					$countries = em_get_countries();
+					$field_value = $countries[$field_value];
+				}
+				break;
 			default:
-			    if( is_array($field_value) ){ $field_value = implode(',', $field_value); }
+			    if( is_array($field_value) ){ $field_value = implode(', ', $field_value); }
 			    break;
 		}
 		return $field_value;
@@ -163,20 +194,16 @@ class EM_Form extends EM_Object {
 	 */
 	function __toString(){
 		$return = '';
-		foreach($this->form_fields as $field){
-			$return .= self::output_field($field);
+		if( is_array($this->form_fields) ){
+			foreach($this->form_fields as $field){
+				$return .= self::output_field($field);
+			}
 		}
 		return apply_filters('emp_form_output',$return, $this);
 	}
 	
 	function output_field($field, $post=true){
 		ob_start();
-		$default = '';
-		if($post === true && !empty($_REQUEST[$field['fieldid']])) {
-			$default = $_REQUEST[$field['fieldid']];
-		}elseif( !empty($post) ){
-			$default = $post;
-		}
 		$required = ( !empty($field['required']) ) ? ' '.apply_filters('emp_forms_output_field_required','<span class="em-form-required">*</span>'):'';
 		switch($field['type']){
 			case 'html':
@@ -237,8 +264,14 @@ class EM_Form extends EM_Object {
 							?>
 							<p class="input-<?php echo $field['type']; ?> input-user-field">
 								<label for='<?php echo $field['fieldid'] ?>'>
-									<?php echo $field['label']. $required  ?>
-								</label> 
+									<?php if( !empty($field['options_reg_tip']) ): ?>
+										<span class="form-tip" title="<?php echo $field['options_reg_tip']; ?>">
+											<?php echo $field['label'] ?> <?php echo $required  ?>
+										</span>
+									<?php else: ?>
+										<?php echo $field['label'] ?> <?php echo $required  ?>
+									<?php endif; ?>
+								</label>
 								<input type="password" name="<?php echo $field['fieldid'] ?>" />
 							</p>
 							<?php
@@ -246,7 +279,15 @@ class EM_Form extends EM_Object {
 							//registration fields
 							?>
 							<p class="input-<?php echo $field['type']; ?> input-user-field">
-								<label for='<?php echo $field['fieldid'] ?>'><?php echo $field['label']. $required  ?></label> 
+								<label for='<?php echo $field['fieldid'] ?>'>
+									<?php if( !empty($field['options_reg_tip']) ): ?>
+										<span class="form-tip" title="<?php echo $field['options_reg_tip']; ?>">
+											<?php echo $field['label'] ?> <?php echo $required  ?>
+										</span>
+									<?php else: ?>
+										<?php echo $field['label'] ?> <?php echo $required  ?>
+									<?php endif; ?>
+								</label> 
 								<?php echo $this->output_field_input($field, $post); ?>
 							</p>
 							<?php	
@@ -270,16 +311,19 @@ class EM_Form extends EM_Object {
 				}
 				break;
 		}	
-		return apply_filters('emp_forms_output_field', ob_get_clean(), $this);	
+		return apply_filters('emp_forms_output_field', ob_get_clean(), $this, $field);	
 	}
 	
 	function output_field_input($field, $post=true){
 		ob_start();
 		$default = '';
+		$default_html = '';
 		if($post === true && !empty($_REQUEST[$field['fieldid']])) {
-			$default = $_REQUEST[$field['fieldid']];
+			$default = is_array($_REQUEST[$field['fieldid']]) ? $_REQUEST[$field['fieldid']]:esc_attr($_REQUEST[$field['fieldid']]);
+			$default_html = esc_attr($_REQUEST[$field['fieldid']]);
 		}elseif( $post !== true && !empty($post) ){
-			$default = $post;
+			$default = is_array($post) ? $post:esc_attr($post);
+			$default_html = esc_attr($post);
 		}
 		$field_name = !empty($field['name']) ? $field['name']:$field['fieldid'];
 		switch($field['type']){
@@ -292,8 +336,17 @@ class EM_Form extends EM_Object {
 				<?php
 				break;	
 			case 'textarea':
+				$size = 'rows="2" cols="20"';
+			    if( defined('EMP_FORMS_TEXTAREA_SIZE') && EMP_FORMS_TEXTAREA_SIZE ){
+			        $sizes = explode(',', EMP_FORMS_TEXTAREA_SIZE);
+			        if( count($sizes) > 1 ){
+						$size = 'rows="'.$sizes[0].'" cols="'.$sizes[1].'"';
+					}else{
+						$size = EMP_FORMS_TEXTAREA_SIZE;				
+					}
+			    }
 				?>
-				<textarea name="<?php echo $field_name ?>" id="<?php echo $field['fieldid'] ?>" class="input"><?php echo $default; ?></textarea>
+				<textarea name="<?php echo $field_name ?>" id="<?php echo $field['fieldid'] ?>" class="input" <?php echo $size; ?>><?php echo $default_html; ?></textarea>
 				<?php
 				break;
 			case 'checkbox':
@@ -318,8 +371,8 @@ class EM_Form extends EM_Object {
 					$value = trim($value); 
 					?><input type="radio" name="<?php echo $field_name ?>" class="<?php echo $field['fieldid'] ?>" value="<?php echo esc_attr($value) ?>" <?php if($value == $default) echo 'checked="checked"'; ?> /> <?php echo $value ?><br /><?php
 				}
-				break;
 				echo "</span>";
+				break;
 			case 'select':
 			case 'multiselect':
 				$values = explode("\r\n",$field['options_select_values']);
@@ -355,13 +408,14 @@ class EM_Form extends EM_Object {
 				break;
 			case 'date':
 			    $date_type = !empty($field['options_date_range']) ? 'em-date-range':'em-date-single';
-				if( !empty($_REQUEST[$field_name]['start']) ) {
+				if( !empty($_REQUEST[$field_name]['start']) && preg_match('/\d{4}-\d{2}-\d{2}/', $_REQUEST[$field_name]['start'])) {
 					$default = array( $_REQUEST[$field_name]['start'] );
-					if( !empty($_REQUEST[$field_name]['end']) ){
-						$default = array( $_REQUEST[$field_name]['end'] );
+					if( !empty($_REQUEST[$field_name]['end']) && preg_match('/\d{4}-\d{2}-\d{2}/', $_REQUEST[$field_name]['end'])){
+						$default[] = $_REQUEST[$field_name]['end'];
 					}
 				}else{
 					$default = explode(',',$default);
+					if( !empty($default[0]) && !preg_match('/\d{4}-\d{2}-\d{2}/', $default[0]) ) $default = ''; //make sure the value is a date
 				}
 				//we're adding a [%s] to the field id and replacing this for the start-end field names because this way other bits (e.g. attendee forms) can manipulate where the [start] and [end] are placed in the element name. 
 				$field_id = strstr($field_name,'[') ? $field_name:$field_name.'[%s]';
@@ -379,13 +433,14 @@ class EM_Form extends EM_Object {
     			break;	
 			case 'time':
 			    $date_type = !empty($field['options_time_range']) ? 'em-time-range':'em-time-single';
-				if( !empty($_REQUEST[$field_name]['start']) ) {
+				if( !empty($_REQUEST[$field_name]['start']) && !preg_match('/^([01]\d|2[0-3]):([0-5]\d) ?(AM|PM)?$/', $_REQUEST[$field_name]['start']) ) {
 					$default = array( $_REQUEST[$field_name]['start'] );
-					if( !empty($_REQUEST[$field_name]['end']) ){
-						$default = array( $_REQUEST[$field_name]['end'] );
+					if( !empty($_REQUEST[$field_name]['end']) && !preg_match('/^([01]\d|2[0-3]):([0-5]\d) ?(AM|PM)?$/', $_REQUEST[$field_name]['end']) ){
+						$default[] = $_REQUEST[$field_name]['end'];
 					}
 				}else{
-					$default = explode(',',$default);
+					if( !is_array($default) ) $default = explode(',',$default);
+					if( !empty($default[0]) && !preg_match('/^([01]\d|2[0-3]):([0-5]\d) ?(AM|PM)?$/', $default[0]) ) $default = ''; //make sure the value is a date
 				}
 				//we're adding a [%s] to the field id and replacing this for the start-end field names because this way other bits (e.g. attendee forms) can manipulate where the [start] and [end] are placed in the element name. 
 				$field_id = strstr($field_name,'[') ? $field_name:$field_name.'[%s]';
@@ -430,9 +485,13 @@ class EM_Form extends EM_Object {
 	 * @return array|string
 	 */
 	function validate(){
-		foreach( array_keys($this->form_fields) as $field_id ){
-			$value = ( array_key_exists($field_id, $this->field_values) ) ? $this->field_values[$field_id] : '';
-			$this->validate_field($field_id, $value);
+		$reg_fields = self::validate_reg_fields();
+		foreach( $this->form_fields as $field ){
+			$field_id = $field['fieldid'];
+			if( $reg_fields || ( !$reg_fields && !array_key_exists($field['type'], $this->user_fields) ) ){ //don't validate reg info if we won't grab anything in get_post
+				$value = ( array_key_exists($field_id, $this->field_values) ) ? $this->field_values[$field_id] : '';
+				$this->validate_field($field_id, $value);
+			}
 		}
 		if( count($this->get_errors()) > 0 ){
 			return false;
@@ -455,22 +514,20 @@ class EM_Form extends EM_Object {
 				case 'text':
 				case 'textarea':
 					//regex
-					if( !empty($field['options_text_regex']) && !@preg_match('/'.$field['options_text_regex'].'/',$value) ){
-						if( !($value == '' && $field['required']) ){
-							$this_err = (!empty($field['options_text_error'])) ? $field['options_text_error']:$err;
-							$this->add_error($this_err);
-							$result = false;
-						}
+					if( trim($value) != '' && !empty($field['options_text_regex']) && !@preg_match('/'.$field['options_text_regex'].'/',$value) ){
+						$this_err = (!empty($field['options_text_error'])) ? $field['options_text_error']:$err;
+						$this->add_error($this_err);
+						$result = false;
 					}
 					//non-empty match
-					if( $result && trim($value) == '' && $field['required'] ){
+					if( $result && trim($value) == '' && !empty($field['required']) ){
 						$this->add_error($err);
 						$result = false;
 					}
 					break;
 				case 'checkbox':
 					//non-empty match
-					if( empty($value) && $field['required'] ){
+					if( empty($value) && !empty($field['required']) ){
 						$this_err = (!empty($field['options_checkbox_error'])) ? $field['options_checkbox_error']:$err;
 						$this->add_error($this_err);
 						$result = false;
@@ -481,7 +538,7 @@ class EM_Form extends EM_Object {
 					array_walk($values,'trim');
 					if( !is_array($value) ) $value = array();
 					//in-values
-					if( (empty($value) && $field['required']) || count(array_diff($value, $values)) > 0 ){
+					if( (empty($value) && !empty($field['required'])) || count(array_diff($value, $values)) > 0 ){
 						$this_err = (!empty($field['options_selection_error'])) ? $field['options_selection_error']:$err;
 						$this->add_error($this_err);
 						$result = false;
@@ -491,7 +548,7 @@ class EM_Form extends EM_Object {
 					$values = explode("\r\n",$field['options_selection_values']);
 					array_walk($values,'trim');
 					//in-values
-					if( (!in_array($value, $values) || empty($value)) && $field['required'] ){
+					if( (!in_array($value, $values) || empty($value)) && !empty($field['required']) ){
 						$this_err = (!empty($field['options_selection_error'])) ? $field['options_selection_error']:$err;
 						$this->add_error($this_err);
 						$result = false;
@@ -502,7 +559,7 @@ class EM_Form extends EM_Object {
 					array_walk($values,'trim');
 					if( !is_array($value) ) $value = array();
 					//in_values
-					if( (empty($value) && $field['required']) || count(array_diff($value, $values)) > 0 ){
+					if( (empty($value) && !empty($field['required'])) || count(array_diff($value, $values)) > 0 ){
 						$this_err = (!empty($field['options_select_error'])) ? $field['options_select_error']:$err;
 						$this->add_error($this_err);
 						$result = false;
@@ -512,7 +569,7 @@ class EM_Form extends EM_Object {
 					$values = explode("\r\n",$field['options_select_values']);
 					array_walk($values,'trim');
 					//in-values
-					if( (!in_array($value, $values) || empty($value)) && $field['required'] ){
+					if( (!in_array($value, $values) || empty($value)) && !empty($field['required']) ){
 						$this_err = (!empty($field['options_select_error'])) ? $field['options_select_error']:$err;
 						$this->add_error($this_err);
 						$result = false;
@@ -521,14 +578,14 @@ class EM_Form extends EM_Object {
 				case 'country':
 					$values = em_get_countries(__('none selected','dbem'));
 					//in-values
-					if( (!array_key_exists($value, $values) || empty($value)) && $field['required'] ){
+					if( (!array_key_exists($value, $values) || empty($value)) && !empty($field['required']) ){
 						$this_err = (!empty($field['options_select_error'])) ? $field['options_select_error']:$err;
 						$this->add_error($this_err);
 						$result = false;
 					}				
 					break;			
 				case 'date':
-				    $dates = explode(',',$value);
+				    $dates = !is_array($value) ? explode(',',$value):$value;
 				    $start_date = $dates[0];
 				    $end_date = !empty($dates[1]) ? $dates[1]:'';
 				    if( !empty($start_date) ){
@@ -556,7 +613,7 @@ class EM_Form extends EM_Object {
 							$this->add_error($this_err);
 							$result = false;
 						}
-					}elseif( $field['required'] ){
+					}elseif( !empty($field['required']) ){
 						if( $field['options_date_range'] && !empty($end_date) ){
 							$this_err = (!empty($field['options_date_error_start'])) ? $field['options_date_error_start']:$this->add_error(__('You must provide a start date.','em-pro'));
 							$this->add_error($this_err);
@@ -569,7 +626,7 @@ class EM_Form extends EM_Object {
 					}
 					break;			
 				case 'time':
-				    $times = explode(',',$value);
+				    $times = !is_array($value) ? explode(',',$value):$value;
 				    $start_time = $times[0];
 				    $end_time = !empty($times[1]) ? $times[1]:'';
 				    if( !empty($start_time) ){
@@ -590,7 +647,7 @@ class EM_Form extends EM_Object {
 							$this->add_error($this_err);
 							$result = false;
 						}
-					}elseif( $field['required'] ){
+					}elseif( !empty($field['required']) ){
 						if( $field['options_time_range'] && !empty($end_time) ){
 							$this_err = (!empty($field['options_time_error_start'])) ? $field['options_time_error_start']:$this->add_error(__('You must provide a start time.','em-pro'));
 							$this->add_error($this_err);
@@ -616,28 +673,27 @@ class EM_Form extends EM_Object {
 					break;
 				default:
 					//Registration and custom fields
-				    $is_hidden_reg = is_user_logged_in() && in_array($field['fieldid'], array('first_name','last_name', 'user_email','user_login', 'name', 'user_password'));
-					if( array_key_exists($field['type'], $this->user_fields) && self::show_reg_fields() && !(!defined('EM_FORCE_REGISTRATION') && $is_hidden_reg) ){
-						//preliminary checks
-						if( in_array($field['type'], array('user_login','first_name','last_name')) && is_user_logged_in() && !defined('EM_FORCE_REGISTRATION') ) break;
+					$is_manual_booking_new_user = ( !empty($_REQUEST['manual_booking']) && wp_verify_nonce($_REQUEST['manual_booking'], 'em_manual_booking_'.$_REQUEST['event_id']) && $_REQUEST['person_id'] == -1 );
+				    $is_hidden_reg = (is_user_logged_in() && !$is_manual_booking_new_user) && in_array($field['type'], array('first_name','last_name', 'user_email','user_login', 'name', 'user_password'));
+					if( array_key_exists($field['type'], $this->user_fields) && self::validate_reg_fields() && !(!defined('EM_FORCE_REGISTRATION') && $is_hidden_reg) ){
+						//preliminary checks/exceptions
+						if( in_array($field['type'], array('user_login','first_name','last_name')) && (is_user_logged_in() && !$is_manual_booking_new_user) && !defined('EM_FORCE_REGISTRATION') ) break;
+						if( is_user_logged_in() && !get_option('dbem_emp_booking_form_reg_input') ) break;
+						//add field-specific validation
 						if ( $field['type'] == 'user_email' && ! is_email( $value ) ) {
-							$this->add_error( __( 'The email address isn&#8217;t correct.', 'dbem') );
+							$this->add_error( __( '<strong>ERROR</strong>: The email address isn&#8217;t correct.', 'dbem') );
 							$result = false;
 						}
-						if( array_key_exists($field['type'], $this->core_user_fields) ){
-							//regex
-							if( !empty($field['options_reg_regex']) && !@preg_match('/'.$field['options_reg_regex'].'/',$value) ){
-								if( !($value == '' && !$field['required']) ){
-									$this_err = (!empty($field['options_reg_error'])) ? $field['options_reg_error']:$err;
-									$this->add_error($this_err);
-									$result = false;
-								}
-							}
-							//non-empty match
-							if( empty($value) && ($field['required']) ){
-								$this->add_error($err);
-								$result = false;
-							}
+						//regex
+						if( trim($value) != '' && !empty($field['options_reg_regex']) && !@preg_match('/'.$field['options_reg_regex'].'/',$value) ){
+							$this_err = (!empty($field['options_reg_error'])) ? $field['options_reg_error']:$err;
+							$this->add_error($this_err);
+							$result = false;
+						}
+						//non-empty match
+						if( empty($value) && !empty($field['required']) ){
+							$this->add_error($err);
+							$result = false;
 						}
 						//custom field chekcs
 						if( array_key_exists($field['type'], $this->custom_user_fields)) {
@@ -704,8 +760,14 @@ class EM_Form extends EM_Object {
 	function input_default($key, $fields, $type = 'text', $value=""){ echo self::get_input_default($key, $fields, $type, $value); }
 
 	
-	private function show_reg_fields(){
-		return ((!is_user_logged_in() || defined('EM_FORCE_REGISTRATION')) && get_option('dbem_bookings_anonymous')) || (is_user_logged_in() && get_option('dbem_emp_booking_form_reg_show')); 
+	private static function show_reg_fields(){
+		$show_reg = ((!is_user_logged_in() || defined('EM_FORCE_REGISTRATION')) && get_option('dbem_bookings_anonymous')) || (is_user_logged_in() && get_option('dbem_emp_booking_form_reg_show'));
+		return apply_filters('emp_form_show_reg_fields', $show_reg); 
+	}
+
+	private static function validate_reg_fields(){
+		$validate = is_user_logged_in() ? get_option('dbem_emp_booking_form_reg_show') && get_option('dbem_emp_booking_form_reg_input') : true;
+		return self::show_reg_fields() && $validate;
 	}
 	
 	function editor($user_fields = true, $custom_fields = true, $captcha_fields = true){
@@ -719,7 +781,7 @@ class EM_Form extends EM_Object {
 				<div class="booking-custom-head">
 					<div class='bc-col-sort bc-col'>&nbsp;</div>
 					<div class='bc-col-label bc-col'><?php _e('Label','em-pro'); ?></div>
-					<div class='bc-col-id bc-col'><?php _e('Field ID','em-pro'); ?><a title="<?php _e('DO NOT change these values if you want to keep your field settings associated with previous booking fields.'); ?>">?</a></div>
+					<div class='bc-col-id bc-col'><?php _e('Field ID','em-pro'); ?><a title="<?php _e('DO NOT change these values if you want to keep your field settings associated with previous booking fields.','em-pro'); ?>">?</a></div>
 					<div class='bc-col-type bc-col'><?php _e('Type','em-pro'); ?></div>
 					<div class='bc-col-required bc-col'><?php _e('Required','em-pro'); ?></div>
 				</div>
@@ -863,7 +925,7 @@ class EM_Form extends EM_Object {
 									</div>
 								</div>
 								<div class="bct-field">
-									<div class="bct-label"><?php _e('Seperator','em-pro'); ?></div>
+									<div class="bct-label"><?php _e('Separator','em-pro'); ?></div>
 									<div class="bct-input">
 										<input type="text" name="options_date_range_seperator[]" <?php self::input_default('options_date_range_seperator',$field_values); ?> />
 										<em><?php _e('This text will appear between the two date fields if this is a date range.','em-pro'); ?></em>
@@ -929,7 +991,7 @@ class EM_Form extends EM_Object {
 									</div>
 								</div>
 								<div class="bct-field">
-									<div class="bct-label"><?php _e('Seperator','em-pro'); ?></div>
+									<div class="bct-label"><?php _e('Separator','em-pro'); ?></div>
 									<div class="bct-input">
 										<input type="text" name="options_time_range_seperator[]" <?php self::input_default('options_time_range_seperator',$field_values); ?> />
 										<em><?php _e('This text will appear between the two date fields if this is a date range.','em-pro'); ?></em>
@@ -1068,7 +1130,7 @@ class EM_Form extends EM_Object {
 									</div>
 								</div>
 								<?php do_action('emp_forms_editor_text_options', $this, $field_values); ?>
-							</div>							
+							</div>	
 							<?php endif; ?>
 							<?php if($user_fields): ?>
 							<div class="bct-registration bct-options" style="display:none;">

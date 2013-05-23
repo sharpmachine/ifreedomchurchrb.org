@@ -36,11 +36,22 @@ class EM_Gateway {
 	 */
 	var $button_enabled = false;
 	/**
+	 * If your gateway is compatible with our Multiple Bookings Mode, then you can set this to true, otherwise your gateway won't be available for booking in this mode.
+	 *  
+	 * @var boolean
+	 */
+	var $supports_multiple_bookings = false;	
+	/**
 	 * Some external gateways (e.g. PayPal IPNs) return information back to your site about payments, which allow you to automatically track refunds made outside Events Manager.
 	 * If you enable this to true, be sure to add an overriding handle_payment_return function to deal with the information sent by your gateway.
 	 * @var unknown_type
 	 */
 	var $payment_return = false;
+	/**
+	 * Counts bookings with pending spaces for availability 
+	 * @var boolean
+	 */
+	var $count_pending_spaces = false;
 
 	/**
 	 * Adds some basic actions and filters to hook into the EM_Gateways class and Events Manager bookings interface. 
@@ -57,6 +68,12 @@ class EM_Gateway {
 				add_filter('em_my_bookings_booked_message',array(&$this,'em_my_bookings_booked_message'),10,2);
 				add_filter('em_booking_get_status',array(&$this,'em_booking_get_status'),10,2);
 			}
+		}
+		if( $this->count_pending_spaces ){
+			//Modify spaces calculations, required even if inactive, due to previously made bookings whilst this may have been active
+			add_filter('em_bookings_get_pending_spaces', array(&$this, 'em_bookings_get_pending_spaces'),1,2);
+			add_filter('em_ticket_get_pending_spaces', array(&$this, 'em_ticket_get_pending_spaces'),1,2);
+			add_filter('em_booking_is_reserved', array(&$this, 'em_booking_is_reserved'),1,2);
 		}
 	}
 
@@ -75,6 +92,7 @@ class EM_Gateway {
 	function booking_add($EM_Event,$EM_Booking, $post_validation = false){
 		global $wpdb, $wp_rewrite, $EM_Notices;
 		add_filter('em_action_booking_add',array(&$this, 'booking_form_feedback'),1,2);//modify the payment return
+		add_filter('em_action_emp_checkout',array(&$this, 'booking_form_feedback'),1,2);//modify the payment return
 		if( $EM_Booking->get_price() > 0 ){
 			$EM_Booking->booking_status = $this->status; //status 4 = awaiting online payment
 		}
@@ -135,6 +153,8 @@ class EM_Gateway {
 				$txn_id = $wpdb->get_var($sql);
 				if(!empty($txn_id)){
 					$result = $this->BOOKINGTXNID = $txn_id;
+				}else{
+				    $result = '';
 				}
 			}else{
 				$result = $this->BOOKINGTXNID;
@@ -165,6 +185,60 @@ class EM_Gateway {
 		}
 		return $message;
 	}
+	
+	/*
+	 * --------------------------------------------------
+	 * PENDING SPACE COUNTING - if $this->count_pending_spaces is true, depending on the gateway, bookings with this gateway status are considered pending and reserved
+	 * --------------------------------------------------
+	 */
+	
+	/**
+	 * Modifies pending spaces calculations to include paypal bookings, but only if PayPal bookings are set to time-out (i.e. they'll get deleted after x minutes), therefore can be considered as 'pending' and can be reserved temporarily.
+	 * @param integer $count
+	 * @param EM_Bookings $EM_Bookings
+	 * @return integer
+	 */
+	function em_bookings_get_pending_spaces($count, $EM_Bookings){
+		foreach($EM_Bookings->bookings as $EM_Booking){
+			if($EM_Booking->booking_status == $this->status && $this->uses_gateway($EM_Booking)){
+				$count += $EM_Booking->get_spaces();
+			}
+		}
+		return $count;
+	}
+	
+	/**
+	 * Changes EM_Booking::is_reserved() return value to true. Only called if $this->count_pending_spaces is set to true.
+	 * @param boolean $result
+	 * @param EM_Booking $EM_Booking
+	 * @return boolean
+	 */
+	function em_booking_is_reserved( $result, $EM_Booking ){
+		if($EM_Booking->booking_status == $this->status && $this->uses_gateway($EM_Booking) && get_option('dbem_bookings_approval_reserved')){
+			return true;
+		}
+		return $result;
+	}
+	
+	/**
+	 * Modifies pending spaces calculations for individual tickets to include paypal bookings, but only if PayPal bookings are set to time-out (i.e. they'll get deleted after x minutes), therefore can be considered as 'pending' and can be reserved temporarily.
+	 * @param integer $count
+	 * @param EM_Ticket $EM_Ticket
+	 * @return integer
+	 */
+	function em_ticket_get_pending_spaces($count, $EM_Ticket){
+		foreach( $EM_Ticket->get_bookings()->bookings as $EM_Booking ){ //get_bookings() is used twice so we get the confirmed (or all if confirmation disabled) bookings of this ticket's total bookings.
+			if($EM_Booking->booking_status == $this->status && $this->uses_gateway($EM_Booking)){
+				foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
+					if( $EM_Ticket_Booking->ticket_id == $EM_Ticket->ticket_id ){
+						$count += $EM_Ticket_Booking->get_spaces();
+					}
+				}
+			}
+		}
+		return $count;
+	}
+	
 		
 	/*
 	 * --------------------------------------------------
@@ -294,7 +368,12 @@ class EM_Gateway {
 	function is_active() {
 		global $EM_Pro;
 		$active = get_option('em_payment_gateways', array());
-		return array_key_exists($this->gateway, $active);
+		$is_active = array_key_exists($this->gateway, $active);
+		if( get_option('dbem_multiple_bookings') ){
+			return $is_active && $this->supports_multiple_bookings;
+		}else{
+			return $is_active;			
+		}
 	}
 
 	/**
@@ -320,7 +399,7 @@ class EM_Gateway {
 					  <td>
 					  	<input type="text" name="<?php echo $this->gateway; ?>_option_name" value="<?php esc_html_e(get_option('em_'. $this->gateway . "_option_name" )); ?>"/><br />
 					  	<em><?php 
-					  		echo sprintf(_('Only if you have not enabled quick pay buttons in your <a href="%s">gateway settings</a>.'),$gateway_link).' '.
+					  		echo sprintf(__('Only if you have not enabled quick pay buttons in your <a href="%s">gateway settings</a>.', 'em-pro'),$gateway_link).' '.
 					  		__('The user will see this as the text option when choosing a payment method.','em-pro'); 
 					  	?></em>
 					  </td>
@@ -330,7 +409,7 @@ class EM_Gateway {
 					  <td>
 					  	<textarea name="<?php echo $this->gateway; ?>_form"><?php esc_html_e(get_option('em_'. $this->gateway . "_form" )); ?></textarea><br />
 					  	<em><?php 
-					  		echo sprintf(_('Only if you have not enabled quick pay buttons in your <a href="%s">gateway settings</a>.'),$gateway_link).
+					  		echo sprintf(__('Only if you have not enabled quick pay buttons in your <a href="%s">gateway settings</a>.','em-pro'),$gateway_link).
 							' '.__('If a user chooses to pay with this gateway, or it is selected by default, this message will be shown just below the selection.', 'em-pro'); 
 					  	?></em>
 					  </td>
@@ -347,7 +426,7 @@ class EM_Gateway {
 					  <th scope="row"><?php _e('Payment Button', 'em-pro') ?></th>
 					  <td>
 					  	<input type="text" name="<?php echo $this->gateway ?>_button" value="<?php esc_attr_e(get_option('em_'. $this->gateway . "_button", 'http://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif' )); ?>" style='width: 40em;' /><br />
-					  	<em><?php echo sprintf(__('Choose the button text. To use an image instead, enter the full url starting with %s or %s.', 'dbem' ), '<code>http://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif</code>','<code>https://...</code>'); ?></em>
+					  	<em><?php echo sprintf(__('Choose the button text. To use an image instead, enter the full url starting with %s or %s.', 'em-pro' ), '<code>http://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif</code>','<code>https://...</code>'); ?></em>
 					  </td>
 				  </tr>
 				</tbody>

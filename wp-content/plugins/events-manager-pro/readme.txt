@@ -1,9 +1,9 @@
 === Events Manager Pro ===
 Contributors: netweblogic
 Tags: events, event, event registration, event calendar, events calendar, event management, paypal, registration, ticket, tickets, ticketing, tickets, theme, widget, locations, maps, booking, attendance, attendee, buddypress, calendar, gigs, payment, payments, sports,
-Requires at least: 3.1
-Tested up to: 3.4.1
-Stable tag: 2.2.2
+Requires at least: 3.3
+Tested up to: 3.5.1
+Stable tag: 2.3.4
 
 == Description ==
 
@@ -22,6 +22,145 @@ http://wp-events-plugin.com/support/
 Please visit http://wp-events-plugin.com/documentation/installation/
 
 == Changelog ==
+= 2.3.4 =
+* fixed bug when trying to switch booking forms in form editor
+* fixed localization typo
+* added sanitation to various input textboxes in admin area
+
+= 2.3.3 =
+* fixed coupon final price miscalculations when tax is automatically included in ticket price
+* fixed customer user gateway fields not being passed on correctly when in no-user mode
+* fixed password user field problems in MB mode
+* improved pro update notifier and key checking consistency
+* added option for MB bookings submit button
+* fixed form regex rules still being required if value is blank and form field not required
+* fixed user profile page failed validation still resulting in update notice along with errors
+
+= 2.3.2 =
+* added Finnish
+* updated German
+* fixed various PHP warnings
+* fixed user bookings link pointing to admin admin area from front-end bookings admin
+* removed some redundant code from paypal gateway
+* added 'empty cart' button to 'view cart' page
+* fixed custom user fields not being saved properly in MB mode
+* fixed manual bookings for MB mode
+* Multiple Bookings now beta, no flag required in wp-config.php file
+
+= 2.3.1 =
+* added dbem_capability_forms_editor wp_option for showing form editor menu to other user roles
+* added em_attendees_form_admin_page_actions action
+* added some extra esc_ and wp_kses functions for sanitization
+* added ids to setting sections to work with new EM UX JS
+* improved MS Global mode so unnecessary tables aren't created for new blogs
+* added wp_title filter to multiple bookings widget
+* fixed manual bookings asking for a gateway since v2.3
+
+= 2.3 =
+* fixed newly created user during booking not being deleted on bad card info via authorize.net
+* updated Swedish translation
+* fixed php warning
+* fixed permission problems in MS preventing form editor and other admin screens from showing to admins without plugin rights
+* updated Swedish
+* fixed newly created users not being deleted in MultiSite if bad A.net card info is supplied
+* added Multiple Bookings feature
+* fixed MultiSite PHP warning on blog creation when visiting blog first time round
+* added hooks to edit no-user booking personal information and custom user fields (requires EM 5.3.5.3 or higher)
+* better template/class renaming, adjusted AJAX loading methods to account for caching plugins
+* moved email reminders out of beta
+* fixed checkboxes, radios and multiselect custom fields in booking form not being editable by admin
+* fixed checkboxes, radios and multiselect attendee fields not being correctly editable by admin
+* fixed some attendee form display and CSS issues
+* fixed tips not appearing for core user fields
+
+= 2.2.9 =
+* important security update for some XSS vunlerabilities - see http://em.cm/xss
+* fixed blank date and time custom fields breaking datepickers for editing user/booking information
+* fixed coupon placeholders remaining if booking doesn't have a coupon associated with it 
+
+= 2.2.8 =
+* fixed IPN validation failing when ticket names contain special characters
+* improved IPN validation requesting, using GET method via wp_remote_get 
+
+= 2.2.7 - Users using 2.2.6 with PayPal should upgrade immediately =
+* fixed mysql error when getting transaction data in specific circumstances
+* fixed pro scripts not loading along with EM scripts in admin area (e.g. bookings dashboards)
+* (critical) fixed IPN verifications failing with live PayPal accounts 
+
+= 2.2.6 =
+* fixed events with one non-required ticket not showing 1 attendee form (when shown in ticket table format)
+* fixed some non-translated strings, updated pot file 
+* added Russian translation
+* fixed registered user info not showing up on booking details/exports if no-user mode and manual booking is made
+* fixed dates and other fields not being formatted when displayed using placeholders e.g. in emails
+* updated French translation
+* adding 'define('EMP_SHARED_CUSTOM_FIELDS',true);' to your wp-config.php file allows user field ids to not be prefixed with dbem_ (for sharing user meta with other plugins)
+* added compatability with new script loading system
+* fixed PayPal IPN verification mechanism, including fallback for curl on servers with outdated SSL certificates
+* limited admin JS loading
+* added fix for badly saved/displaying user meta date/time fields, added installation script to fix previously bad date/time user meta values 
+* added fix for normal field country output formatting
+* added coupon calculation to CSV ticket total calculation
+* added removal of header in CSV if EM_CSV_DISABLE_HEADERS is defined
+* added coupon code placeholders #_BOOKINGCOUPON, #_BOOKINGCOUPONCODE, #_BOOKINGCOUPONDISCOUNT, #_BOOKINGCOUPONNAME, #_BOOKINGCOUPONDESCRIPTION
+* added coupon code column to booking tables and csv export
+* fixed IE8/safari form editor display issues
+* fixed manual bookings allowing double bookings depending on EM settings
+* fixed updates not accessing update information e.g. changelogs from our servers
+* changed em_booking_add apply_filter to add_action (since it's an action)
+
+= 2.2.5 =
+* fixed some non-translated strings
+* updated the POT file
+* added Chinese translation, thanks to Leo Losoviz
+* fixed pending/reserved spaces not being approvable, requires EM 5.3 to work
+
+= 2.2.4.1 =
+* fixed badly named folder for upgrade
+* fixed require_once() with hardcoded path causing install/upgrade issues
+
+= 2.2.4 =
+* fixed attendee forms ommitting first attendee in each ticket
+* fixed attendee #NUM# not being converted if not in an html element
+* fixed tips not being added to dynamic attendee fields
+* fixed radio and checkboxes not being read properly for attendees
+* updated Swedish
+* updated bookings currency tip link
+* added $field info to emp_forms_output_field filter
+* changed user creation/deletion in first-registration failed authorize.net bookings to use internal account creation timer
+* fixed event reminders not reading booking placeholders
+* fixed/improved first-time user deletion on bad authorize.net card data
+* changed paypal cron hook em_cron_hook to em_paypal_cron
+* fixed pending individual ticket counts with PayPal bookings in progress/reserved
+* added condition to not validate #_BOOKINGBUTTON bookings
+* added complete activation/deactivation of attendee ticket functions
+* changed is_main_blog functions to is_main_site
+* updated pot file, Swedish
+* added check for paid bookings with no gateway choice (anti-spam/hack)
+* added Japanese
+* removed site language option (repeated option, typo)
+* added all countries for paypal destination site language
+* prevented/fixed various php warnings
+* removed parse_query hook for permalink gateway handling (i.e. catching paypal IPNs), gateways now use a direct wp-admin/admin-ajax.php... url
+* fixed validation of manual bookings and editing of bookings forcing address fields, changed priority of EM_Booking_Form booking interception
+* moved ticket/booking pending space calculations to base gateway class, now accounts for all gateways
+* fixed person data not being saved to EM_Person instance on first booking
+* fixed attendee form loading depending on default tickets (based on introduction of EM_Ticket::is_required() in EM 5.2.9)
+* fixed EM_Person information not being saved to instance on first booking, causing authorize.net to not retrieve first/last name correctly
+* removed custom html from form when editing a booking
+* improved default attendee form to include attendee #NUM#
+* attendee fields is now beta and ready to go
+
+= 2.2.3 =
+* added attendee forms - alpha - add define('EM_ATTENDEES',true); to your wp-config.php file
+* fixed some display / validation errors in booking forms when modifying booking
+* fixed #_BOOKINGTXNID returning placeholder if there's an empty value, now returns an empty value
+* fixed minimum spaces calculations for attendees, as per fix in 5.2.5.2
+* fixed non-editable user fields breaking validation
+* updated German translation
+* fixed link still showing on the single booking view to the assigned default user for no-user bookings
+* hid some js localized vars if bookings disabled
+
 = 2.2.2 =
 * fixed no-user mode and user fields bug still happening in CSV exports
 * fixed MS global mode showing network transactions on all blogs

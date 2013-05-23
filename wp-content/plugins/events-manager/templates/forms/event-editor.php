@@ -42,14 +42,14 @@ if( !empty($_REQUEST['success']) ){
 		<?php endif; ?>
 		<h4 class="event-form-name"><?php _e ( 'Event Name', 'dbem' ); ?></h4>
 		<div class="inside event-form-name">
-			<input type="text" name="event_name" id="event-name" value="<?php echo htmlspecialchars($EM_Event->event_name,ENT_QUOTES); ?>" /><?php echo $required; ?>
+			<input type="text" name="event_name" id="event-name" value="<?php echo esc_attr($EM_Event->event_name,ENT_QUOTES); ?>" /><?php echo $required; ?>
 			<br />
 			<?php _e ( 'The event name. Example: Birthday party', 'dbem' )?>
 			<?php em_locate_template('forms/event/group.php',true); ?>
 		</div>
 					
 		<h4 class="event-form-when"><?php _e ( 'When', 'dbem' ); ?></h4>
-		<div class="inside">
+		<div class="inside event-form-when">
 		<?php 
 			if( empty($EM_Event->event_id) && $EM_Event->can_manage('edit_recurring_events','edit_others_recurring_events') && get_option('dbem_recurrence_enabled') ){
 				em_locate_template('forms/event/when-with-recurring.php',true);
@@ -76,11 +76,11 @@ if( !empty($_REQUEST['success']) ){
 				<?php else: ?>
 					<textarea name="content" rows="10" style="width:100%"><?php echo $EM_Event->post_content ?></textarea>
 					<br />
-					<?php _e ( 'Details about the event.', 'dbem' )?><?php _e ( 'HTML Allowed.', 'dbem' )?>
+					<?php _e ( 'Details about the event.', 'dbem' )?> <?php _e ( 'HTML allowed.', 'dbem' )?>
 				<?php endif; ?>
 			</div>
 			<div class="event-extra-details">
-				<?php if(get_option('dbem_categories_enabled')) { em_locate_template('forms/event/attributes-public.php',true); }  ?>
+				<?php if(get_option('dbem_attributes_enabled')) { em_locate_template('forms/event/attributes-public.php',true); }  ?>
 				<?php if(get_option('dbem_categories_enabled')) { em_locate_template('forms/event/categories-public.php',true); }  ?>
 			</div>
 		</div>
@@ -110,7 +110,11 @@ if( !empty($_REQUEST['success']) ){
 	<input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('wpnonce_event_save'); ?>" />
 	<input type="hidden" name="action" value="event_save" />
 	<?php if( !empty($_REQUEST['redirect_to']) ): ?>
-	<input type="hidden" name="redirect_to" value="<?php echo $_REQUEST['redirect_to']; ?>" />
+	<input type="hidden" name="redirect_to" value="<?php echo esc_attr($_REQUEST['redirect_to']); ?>" />
 	<?php endif; ?>
 </form>
-<?php em_locate_template('forms/tickets-form.php', true); //put here as it can't be in the add event form ?>
+<?php
+if( get_option('dbem_rsvp_enabled') && !(get_option('dbem_bookings_tickets_single') && count($EM_Tickets->tickets) == 1) ){ 
+	em_locate_template('forms/tickets-form.php', true); //put here as it can't be in the add event form
+} 
+?>

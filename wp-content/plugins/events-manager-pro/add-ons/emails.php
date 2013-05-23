@@ -6,11 +6,11 @@ class EM_Emails {
 	function init() {
 	    add_action('update_option_dbem_emp_emails_reminder_time', array('EM_Emails','clear_crons'));
 		if( get_option('dbem_cron_emails', 1) ) {
-		    $todays_time_to_run = strtotime(date('Y-m-d', time()).' '.  get_option('dbem_emp_emails_reminder_time'));
-		    $tomorrows_time_to_run = strtotime(date('Y-m-d', time()+(86400)).' '. get_option('dbem_emp_emails_reminder_time'));
-		    $time = $todays_time_to_run > time() ? $todays_time_to_run:$tomorrows_time_to_run;
 			//set up cron for addint to email queue
 			if( !wp_next_scheduled('emp_cron_emails_queue') ){
+			    $todays_time_to_run = strtotime(date('Y-m-d', current_time('timestamp')).' '.  get_option('dbem_emp_emails_reminder_time'));
+			    $tomorrows_time_to_run = strtotime(date('Y-m-d', current_time('timestamp')+(86400)).' '. get_option('dbem_emp_emails_reminder_time'));
+			    $time = $todays_time_to_run > current_time('timestamp') ? $todays_time_to_run:$tomorrows_time_to_run;
 				$result = wp_schedule_event( $time,'daily','emp_cron_emails_queue');
 			}
 			add_action('emp_cron_emails_queue', array('EM_Emails','queue_emails') );
@@ -22,6 +22,9 @@ class EM_Emails {
 			if( get_option('dbem_emp_emails_reminder_ical') ){
 				//set up emails for ical cleaning
 				if( !wp_next_scheduled('emp_cron_emails_ical_cleanup') ){
+				    $todays_time_to_run = strtotime(date('Y-m-d', current_time('timestamp')).' '.  get_option('dbem_emp_emails_reminder_time'));
+				    $tomorrows_time_to_run = strtotime(date('Y-m-d', current_time('timestamp')+(86400)).' '. get_option('dbem_emp_emails_reminder_time'));
+				    $time = $todays_time_to_run > current_time('timestamp') ? $todays_time_to_run:$tomorrows_time_to_run;
 					$result = wp_schedule_event( $time,'daily','emp_cron_emails_ical_cleanup');
 				}
 				add_action('emp_cron_emails_ical_cleanup', array('EM_Emails','clean_icals') );
@@ -64,9 +67,10 @@ class EM_Emails {
 	        $emails = array();
 	    	//get ppl attending
 	    	foreach( $EM_Event->get_bookings()->get_bookings()->bookings as $EM_Booking ){ //get confirmed bookings
+	    	    /* @var $EM_Booking EM_Booking */
 	    	    if( is_email($EM_Booking->get_person()->user_email) ){
-			    	$subject = $EM_Event->output(get_option('dbem_emp_emails_reminder_subject'),'raw');
-			    	$message = $EM_Event->output(get_option('dbem_emp_emails_reminder_body'),$output_type);
+			    	$subject = $EM_Booking->output(get_option('dbem_emp_emails_reminder_subject'),'raw');
+			    	$message = $EM_Booking->output(get_option('dbem_emp_emails_reminder_body'),$output_type);
 		    	    $emails[] = array($EM_Booking->get_person()->user_email, $subject, $message, $EM_Booking->booking_id);
 	    	    }
 	    	}
@@ -165,14 +169,14 @@ class EM_Emails {
 	function options(){
 	    global $save_button;
 	    ?>
-		<div  class="postbox " >
-		<div class="handlediv" title="<?php __('Click to toggle', 'dbem'); ?>"><br /></div><h3><span><?php _e ( 'Event Email Reminders', 'em-pro' ); ?> <em>(Beta)</em></span></h3>
+		<div  class="postbox " id="em-opt-email-reminders" >
+		<div class="handlediv" title="<?php __('Click to toggle', 'dbem'); ?>"><br /></div><h3><?php _e ( 'Event Email Reminders', 'em-pro' ); ?></h3>
 		<div class="inside">
 			<table class='form-table'>
 				<tr><td colspan='2'>
 					<p>
 						<?php _e( 'Events Manager can send people that booked a place at your events a reminder email before it starts.', 'em-pro' );  ?>
-						<?php echo sprintf(__('We use <a href="%s">WP Cron</a> for sheduling checks for future events, which relies on site visits to trigger these tasks to run. If you have low levels of site traffic, this may not happen frequently enough, so you may want to consider forcing WP-Cron to run every few minutes. For more information, <a href="%s">read this tutorial</a> on setting up WP Cron.','em-pro'),'#emails','#emails'); ?>
+						<?php echo sprintf(__('We use <a href="%s">WP Cron</a> for scheduling checks for future events, which relies on site visits to trigger these tasks to run. If you have low levels of site traffic, this may not happen frequently enough, so you may want to consider forcing WP-Cron to run every few minutes. For more information, <a href="%s">read this tutorial</a> on setting up WP Cron.','em-pro'),'#emails','#emails'); ?>
 					</p>
 					<p><?php _e('<strong>Important!</strong>, you should use SMTP as your email setup if you are sending automated emails in this way for optimal performance. Other methods are not suited to sending mass emails.', 'em-pro'); ?>
 				</td></tr>
