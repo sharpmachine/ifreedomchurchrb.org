@@ -106,7 +106,7 @@ class EM_Booking extends EM_Object{
 	 * @param mixed $booking_data
 	 * @return null
 	 */
-	function EM_Booking( $booking_data = false ){
+	function __construct( $booking_data = false ){
 		//Get the person for this booking
 		global $wpdb;
 	  	if( $booking_data !== false ){
@@ -116,7 +116,7 @@ class EM_Booking extends EM_Object{
 				$booking = $booking_data;
 			}elseif( is_numeric($booking_data) ){
 				//Retreiving from the database
-				$sql = "SELECT * FROM ". EM_BOOKINGS_TABLE ." LEFT JOIN ". EM_META_TABLE ." ON object_id=booking_id WHERE booking_id ='$booking_data'";
+				$sql = "SELECT * FROM ". EM_BOOKINGS_TABLE ." WHERE booking_id ='$booking_data'";
 				$booking = $wpdb->get_row($sql, ARRAY_A);
 			}
 			//booking meta
@@ -125,7 +125,7 @@ class EM_Booking extends EM_Object{
 			$this->to_object($booking);
 			$this->previous_status = $this->booking_status;
 			$this->get_person();
-			$this->timestamp = !empty($booking['booking_date']) ? strtotime($booking['booking_date']):false;
+			$this->timestamp = !empty($booking['booking_date']) ? strtotime($booking['booking_date'], current_time('timestamp')):false;
 		}
 		//Do it here so things appear in the po file.
 		$this->status_array = array(
@@ -186,7 +186,10 @@ class EM_Booking extends EM_Object{
 				$this->feedback_message = __('Changes saved','dbem');
 			}else{
 				$update = false;
-				$result = $wpdb->insert($table, $data, $this->get_types($data));
+				$data_types = $this->get_types($data);
+				$data['booking_date'] = current_time('mysql');
+				$data_types[] = '%s';
+				$result = $wpdb->insert($table, $data, $data_types);
 			    $this->booking_id = $wpdb->insert_id;  
 				$this->feedback_message = __('Your booking has been recorded','dbem'); 
 			}
@@ -231,7 +234,7 @@ class EM_Booking extends EM_Object{
 		$conds = array(); 
 		foreach($search as $key => $value) {
 			if( array_key_exists($key, $this->fields) ){
-				$value = $wpdb->escape($value);
+				$value = esc_sql($value);
 				$conds[] = "`$key`='$value'";
 			} 
 		}
@@ -301,7 +304,7 @@ class EM_Booking extends EM_Object{
 		//step 2, tickets bookings info
 		if( count($this->get_tickets_bookings()) > 0 ){
 			$ticket_validation = array();
-			foreach($this->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
+			foreach($this->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){ /* @var $EM_Ticket_Booking EM_Ticket_Booking */
 				if ( !$EM_Ticket_Booking->validate() ){
 					$ticket_validation[] = false;
 					$result = $basic && !in_array(false,$ticket_validation);
@@ -316,6 +319,11 @@ class EM_Booking extends EM_Object{
 		if( !$override_availability && $this->get_event()->get_bookings()->get_available_spaces() < $this->get_spaces() ){
 		    $result = false;
 		    $this->add_error(get_option('dbem_booking_feedback_full'));
+		}
+		//can we book this amount of spaces at once?
+		if( $this->get_event()->event_rsvp_spaces > 0 && $this->get_spaces() > $this->get_event()->event_rsvp_spaces ){
+		    $result = false;
+		    $this->add_error( sprintf(get_option('dbem_booking_feedback_spaces_limit'), $this->get_event()->event_rsvp_spaces));			
 		}
 		return apply_filters('em_booking_validate',$result,$this);
 	}
@@ -345,13 +353,13 @@ class EM_Booking extends EM_Object{
 	    //recalculate price here only if price is not actually set
 		if( $this->booking_price === null ){
 		    $this->calculate_price();
-			apply_filters('em_booking_get_price', $this->booking_price, $this);
+			$this->booking_price = apply_filters('em_booking_get_price', $this->booking_price, $this);
 		}
 		//return booking_price, formatted or not
 		if($format){
 			return $this->format_price($this->booking_price);
 		}
-		return $this->booking_price;
+		return round($this->booking_price,2);
 	}
 	
 	/**
@@ -387,7 +395,7 @@ class EM_Booking extends EM_Object{
 	    $price = $this->get_price_pre_taxes();
 	    //add taxes to price
 	    if( $this->get_tax_rate() > 0 ){
-	        $this->booking_taxes = round($price * ($this->get_tax_rate()/100), 2); //calculate and save tax amount
+	        $this->booking_taxes = $price * ($this->get_tax_rate()/100); //calculate and save tax amount
 		    $price += $this->booking_taxes; //add taxes
 		    $this->taxes_applied = true;
 	    }
@@ -429,8 +437,8 @@ class EM_Booking extends EM_Object{
 	    //reset price and taxes calculations
 	    $this->booking_price = $this->booking_taxes = null;
 	    //get post-tax price and save it to booking_price
-	    $this->booking_price = $this->get_price_post_taxes();
-	    return apply_filters('em_booking_calculate_price', $this->booking_price, $this);
+	    $this->booking_price = apply_filters('em_booking_calculate_price', $this->get_price_post_taxes(), $this);
+	    return $this->booking_price; 
 	}
 	
 	/* 
@@ -454,7 +462,7 @@ class EM_Booking extends EM_Object{
 	            $this->legacy_tax_rate = true;
 	        }else{
 	            //first time we're applying tax rate
-	            $this->booking_tax_rate = parent::get_tax_rate();
+	            $this->booking_tax_rate = $this->get_event()->get_tax_rate();
 	        }
 	    }
 	    return $this->booking_tax_rate;
@@ -592,10 +600,12 @@ class EM_Booking extends EM_Object{
 			//This person is already included, so don't do anything
 		}elseif( is_object($EM_Person) && ($EM_Person->ID === $this->person_id || $this->booking_id == '') ){
 			$this->person = $EM_Person;
+			$this->person_id = $this->person->ID;
 		}elseif( is_numeric($this->person_id) ){
 			$this->person = new EM_Person($this->person_id);
 		}else{
 			$this->person = new EM_Person(0);
+			$this->person_id = $this->person->ID;
 		}
 		//if this user is the parent user of disabled registrations, replace user details here:
 		if( get_option('dbem_bookings_registration_disable') && $this->person->ID == get_option('dbem_bookings_registration_user') && (empty($this->person->loaded_no_user) || $this->person->loaded_no_user != $this->booking_id) ){
@@ -649,17 +659,24 @@ class EM_Booking extends EM_Object{
 	    }
 	    //Check the user name
 	    if( !empty($_REQUEST['user_name']) ){
-	    	$name_string = explode(' ',wp_kses($_REQUEST['user_name'], array()));
+	    	//split full name up and save full, first and last names
+	    	$user_data['user_name'] = wp_kses($_REQUEST['user_name'], array());
+	    	$name_string = explode(' ',$user_data['user_name']);
 	    	$user_data['first_name'] = array_shift($name_string);
 	    	$user_data['last_name'] = implode(' ', $name_string);
+	    }else{
+		    //Check the first/last name
+		    $name_string = array();
+		    if( !empty($_REQUEST['first_name']) ){
+		    	$user_data['first_name'] = $name_string[] = wp_kses($_REQUEST['first_name'], array()); 
+		    }
+		    if( !empty($_REQUEST['last_name']) ){
+		    	$user_data['last_name'] = $name_string[] = wp_kses($_REQUEST['last_name'], array());
+		    }
+		    if( !empty($name_string) ) $user_data['user_name'] = implode(' ', $name_string);
 	    }
-	    //Check the first/last name
-	    if( !empty($_REQUEST['first_name']) ){
-	    	$user_data['first_name'] = wp_kses($_REQUEST['first_name'], array());
-	    }
-	    if( !empty($_REQUEST['last_name']) ){
-	    	$user_data['last_name'] = wp_kses($_REQUEST['last_name'], array());
-	    }
+	    //Save full name
+	    if( !empty($user_data['first_name']) || !empty($user_data['last_name']) )
 	    //Check the phone
 	    if( !empty($_REQUEST['dbem_phone']) ){
 	    	$user_data['dbem_phone'] = wp_kses($_REQUEST['dbem_phone'], array());
@@ -724,6 +741,7 @@ class EM_Booking extends EM_Object{
 				$this->previous_status = $this->booking_status;
 				$this->booking_status = false;
 				$this->feedback_message = sprintf(__('%s deleted', 'dbem'), __('Booking','dbem'));
+				$wpdb->delete( EM_META_TABLE, array('meta_key'=>'booking-note', 'object_id' => $this->booking_id), array('%s','%d'));
 			}else{
 				$this->add_error(sprintf(__('%s could not be deleted', 'dbem'), __('Booking','dbem')));
 			}
@@ -783,8 +801,10 @@ class EM_Booking extends EM_Object{
 			$this->feedback_message = sprintf(__('Booking %s.','dbem'), $action_string);
 			if( $email ){
 				if( $this->email() ){
-					$this->feedback_message .= " ".__('Email Sent.','dbem');
-				}elseif( $this->previous_status == 0 ){
+				    if( $this->mails_sent > 0 ){
+				        $this->feedback_message .= " ".__('Email Sent.','dbem');
+				    }
+				}else{
 					//extra errors may be logged by email() in EM_Object
 					$this->feedback_message .= ' <span style="color:red">'.__('ERROR : Email Not Sent.','dbem').'</span>';
 					$this->add_error(__('ERROR : Email Not Sent.','dbem'));
@@ -799,6 +819,9 @@ class EM_Booking extends EM_Object{
 		return apply_filters('em_booking_set_status', $result, $this);
 	}
 	
+	/**
+	 * Returns true if booking is reserving a space at this event, whether confirmed or not 
+	 */
 	function is_reserved(){
 	    $result = false;
 	    if( $this->booking_status == 0 && get_option('dbem_bookings_approval_reserved') ){
@@ -812,6 +835,14 @@ class EM_Booking extends EM_Object{
 	}
 	
 	/**
+	 * Returns true if booking is either pending or reserved but not confirmed (which is assumed pending) 
+	 */
+	function is_pending(){
+		$result = ($this->is_reserved() || $this->booking_status == 0) && $this->booking_status != 1;
+	    return apply_filters('em_booking_is_pending', $result, $this);
+	}
+	
+	/**
 	 * Add a booking note to this booking. returns wpdb result or false if use can't manage this event.
 	 * @param string $note
 	 * @return mixed
@@ -821,7 +852,7 @@ class EM_Booking extends EM_Object{
 		if( $this->can_manage() ){
 			$this->get_notes();
 			$note = array('author'=>get_current_user_id(),'note'=>$note_text,'timestamp'=>current_time('timestamp'));
-			$this->notes[] = $note;
+			$this->notes[] = wp_kses_data($note);
 			$this->feedback_message = __('Booking note successfully added.','dbem');
 			return $wpdb->insert(EM_META_TABLE, array('object_id'=>$this->booking_id, 'meta_key'=>'booking-note', 'meta_value'=> serialize($note)),array('%d','%s','%s'));
 		}
@@ -831,7 +862,7 @@ class EM_Booking extends EM_Object{
 	function get_admin_url(){
 		if( get_option('dbem_edit_bookings_page') && (!is_admin() || !empty($_REQUEST['is_public'])) ){
 			$my_bookings_page = get_permalink(get_option('dbem_edit_bookings_page'));
-			$bookings_link = em_add_get_params($my_bookings_page, array('event_id'=>$this->event_id, 'booking_id'=>'booking_id'), false);
+			$bookings_link = em_add_get_params($my_bookings_page, array('event_id'=>$this->event_id, 'booking_id'=>$this->booking_id), false);
 		}else{
 			if( $this->get_event()->blog_id != get_current_blog_id() ){
 				$bookings_link = get_admin_url($this->get_event()->blog_id, 'edit.php?post_type='.EM_POST_TYPE_EVENT."&page=events-manager-bookings&event_id=".$this->event_id."&booking_id=".$this->booking_id);
@@ -868,6 +899,15 @@ class EM_Booking extends EM_Object{
 					break;
 				case '#_BOOKINGSPACES':
 					$replace = $this->get_spaces();
+					break;
+				case '#_BOOKINGDATE':
+					$replace = ( $this->timestamp ) ? date_i18n(get_option('dbem_date_format'), $this->timestamp):'n/a';
+					break;
+				case '#_BOOKINGTIME':
+					$replace = ( $this->timestamp ) ? date_i18n(get_option('dbem_time_format'), $this->timestamp):'n/a';
+					break;
+				case '#_BOOKINGDATETIME':
+					$replace = ( $this->timestamp ) ? date_i18n(get_option('dbem_date_format').' '.get_option('dbem_time_format'), $this->timestamp):'n/a';
 					break;
 				case '#_BOOKINGLISTURL':
 					$replace = em_get_my_bookings_url();
@@ -911,6 +951,11 @@ class EM_Booking extends EM_Object{
 					em_locate_template('emails/bookingtickets.php', true, array('EM_Booking'=>$this));
 					$replace = ob_get_clean();
 					break;
+				case '#_BOOKINGSUMMARY':
+					ob_start();
+					em_locate_template('emails/bookingsummary.php', true, array('EM_Booking'=>$this));
+					$replace = ob_get_clean();
+					break;
 				default:
 					$replace = $full_result;
 					break;
@@ -923,7 +968,8 @@ class EM_Booking extends EM_Object{
 			$output_string = str_replace($full_result, $replacement , $output_string );
 		}
 		//run event output too, since this is never run from within events and will not infinitely loop
-		$output_string = $this->get_event()->output($output_string, $target);
+		$EM_Event = apply_filters('em_booking_output_event', $this->get_event(), $this); //allows us to override the booking event info if it belongs to a parent or translation
+		$output_string = $EM_Event->output($output_string, $target);
 		return apply_filters('em_booking_output', $output_string, $this, $format, $target);	
 	}
 	
@@ -932,7 +978,7 @@ class EM_Booking extends EM_Object{
 	 * @param EM_Event $event
 	 * @return boolean
 	 */
-	function email( $email_admin = true, $force_resend = false ){
+	function email( $email_admin = true, $force_resend = false, $email_attendee = true ){
 		global $EM_Mailer;
 		$result = true;
 		$this->mails_sent = 0;
@@ -948,7 +994,7 @@ class EM_Booking extends EM_Object{
 			$output_type = get_option('dbem_smtp_html') ? 'html':'email';
 
 			//Send user (booker) emails
-			if( !empty($msg['user']['subject']) ){
+			if( !empty($msg['user']['subject']) && $email_attendee ){
 				$msg['user']['subject'] = $this->output($msg['user']['subject'], 'raw');
 				$msg['user']['body'] = $this->output($msg['user']['body'], $output_type);
 				//Send to the person booking
@@ -960,32 +1006,27 @@ class EM_Booking extends EM_Object{
 			}
 			
 			//Send admin/contact emails if this isn't the event owner or an events admin
-			if( $email_admin && !empty($msg['admin']['subject']) && (!$this->can_manage() || (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'booking_add') || $this->manage_override) ){ //emails won't be sent if admin is logged in unless they book themselves
-				if( get_option('dbem_bookings_contact_email') == 1 || get_option('dbem_bookings_notify_admin') ){
+			if( $email_admin && !empty($msg['admin']['subject']) ){ //emails won't be sent if admin is logged in unless they book themselves
+				//get admin emails that need to be notified, hook here to add extra admin emails
+				$admin_emails = str_replace(' ','',get_option('dbem_bookings_notify_admin'));
+				$admin_emails = apply_filters('em_booking_admin_emails', explode(',', $admin_emails), $this); //supply emails as array
+				if( get_option('dbem_bookings_contact_email') == 1 && !empty($EM_Event->get_contact()->user_email) ){
+				    //add event owner contact email to list of admin emails
+				    $admin_emails[] = $EM_Event->get_contact()->user_email;
+				}
+				foreach($admin_emails as $key => $email){ if( !is_email($email) ) unset($admin_emails[$key]); } //remove bad emails
+				//proceed to email admins if need be
+				if( !empty($admin_emails) ){
 					//Only gets sent if this is a pending booking, unless approvals are disabled.
 					$msg['admin']['subject'] = $this->output($msg['admin']['subject'],'raw');
 					$msg['admin']['body'] = $this->output($msg['admin']['body'], $output_type);
-					//email contact
-					if( get_option('dbem_bookings_contact_email') == 1 ){
-						if( !$this->email_send( $msg['admin']['subject'], $msg['admin']['body'], $EM_Event->get_contact()->user_email) && current_user_can('list_users')){
-							$this->errors[] = __('Confirmation email could not be sent to contact person. Registrant should have gotten their email (only admin see this warning).','dbem');
-							$result = false;
-						}else{
-							$this->mails_sent++;
-						}
-					}
-					//email admin
-					if( get_option('dbem_bookings_notify_admin') != '' && preg_match('/^([_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.)+[a-z]{2,3},?)+$/', str_replace(' ', '', get_option('dbem_bookings_notify_admin'))) ){
-						$admin_emails =  get_option('dbem_bookings_notify_admin');
-						$admin_emails = explode(',', $admin_emails); //supply emails as array
-						foreach($admin_emails as $key => $email){ $admin_emails[$key] = trim($email); } //strip whitespace
-						if( !$this->email_send( $msg['admin']['subject'], $msg['admin']['body'], $admin_emails) ){
+					//email admins
+						if( !$this->email_send( $msg['admin']['subject'], $msg['admin']['body'], $admin_emails) && current_user_can('list_users') ){
 							$this->errors[] = __('Confirmation email could not be sent to admin. Registrant should have gotten their email (only admin see this warning).','dbem');
 							$result = false;
 						}else{
 							$this->mails_sent++;
 						}
-					}
 				}
 			}
 		}
@@ -1002,26 +1043,29 @@ class EM_Booking extends EM_Object{
 	    		$msg['user']['subject'] = get_option('dbem_bookings_email_pending_subject');
 	    		$msg['user']['body'] = get_option('dbem_bookings_email_pending_body');
 	    		//admins should get something (if set to)
-	    		$msg['admin']['subject'] = get_option('dbem_bookings_contact_email_subject');
-	    		$msg['admin']['body'] = get_option('dbem_bookings_contact_email_body');
+	    		$msg['admin']['subject'] = get_option('dbem_bookings_contact_email_pending_subject');
+	    		$msg['admin']['body'] = get_option('dbem_bookings_contact_email_pending_body');
 	    		break;
 	    	case 1:
 	    		$msg['user']['subject'] = get_option('dbem_bookings_email_confirmed_subject');
 	    		$msg['user']['body'] = get_option('dbem_bookings_email_confirmed_body');
 	    		//admins should get something (if set to)
-	    		$msg['admin']['subject'] = get_option('dbem_bookings_contact_email_subject');
-	    		$msg['admin']['body'] = get_option('dbem_bookings_contact_email_body');
+	    		$msg['admin']['subject'] = get_option('dbem_bookings_contact_email_confirmed_subject');
+	    		$msg['admin']['body'] = get_option('dbem_bookings_contact_email_confirmed_body');
 	    		break;
 	    	case 2:
 	    		$msg['user']['subject'] = get_option('dbem_bookings_email_rejected_subject');
 	    		$msg['user']['body'] = get_option('dbem_bookings_email_rejected_body');
+	    		//admins should get something (if set to)
+	    		$msg['admin']['subject'] = get_option('dbem_bookings_contact_email_rejected_subject');
+	    		$msg['admin']['body'] = get_option('dbem_bookings_contact_email_rejected_body');
 	    		break;
 	    	case 3:
 	    		$msg['user']['subject'] = get_option('dbem_bookings_email_cancelled_subject');
 	    		$msg['user']['body'] = get_option('dbem_bookings_email_cancelled_body');
 	    		//admins should get something (if set to)
-	    		$msg['admin']['subject'] = get_option('dbem_contactperson_email_cancelled_subject');
-	    		$msg['admin']['body'] = get_option('dbem_contactperson_email_cancelled_body');
+	    		$msg['admin']['subject'] = get_option('dbem_bookings_contact_email_cancelled_subject');
+	    		$msg['admin']['body'] = get_option('dbem_bookings_contact_email_cancelled_body');
 	    		break;
 	    }
 	    return apply_filters('em_booking_email_messages', $msg, $this);
@@ -1030,7 +1074,7 @@ class EM_Booking extends EM_Object{
 	/**
 	 * Can the user manage this event? 
 	 */
-	function can_manage(){
+	function can_manage( $owner_capability = false, $admin_capability = false, $user_to_check = false ){
 		return $this->get_event()->can_manage('manage_bookings','manage_others_bookings') || empty($this->booking_id) || !empty($this->manage_override);
 	}
 	

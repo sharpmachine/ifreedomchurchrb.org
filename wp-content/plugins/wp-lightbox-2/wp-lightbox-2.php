@@ -1,15 +1,15 @@
 <?php
 /**
  * Plugin Name: WP Lightbox 2
- * Plugin URI: http://onlinewebapplication.com/wp-lightbox-2/
- * Description: This plugin used to add the lightbox (overlay) effect to the current page images on your WordPress blog.
- * Version:       2.28.1
- * Author:        masdiblogs
- * Author URI:    http://profiles.wordpress.org/masdiblogs
- * License:       GNU General Public License, v2 (or newer)
- * License URI:  http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * Plugin URI: http://wpdevart.com/wordpress-lightbox-plugin
+ * Description: WP Lightbox 2 is awesome tool for adding responsive lightbox (overlay) effect for images and also create lightbox for photo albums/galleries on your WordPress blog. WordPress Lightbox is one of the most useful plugins for your website.
+ * Version: 3.0.5
+ * Author:Syed Balkhi
+ * Author URI: http://syedbalkhi.com
+ * License: GNU General Public License, v2 (or newer)
+ * License URI: http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
-/*  Copyright 2011 Pankaj Jha (onlinewebapplication.com)
+/*  Copyright 2015 Syed Balkhi 
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,35 +25,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/*2.21 - Image Map, Shrink large images to fit smaller screens*/
-/*2.22 - Fixed one s, that caused a fatal error*/
-/*2.23 - Updated jQuery calls for faster load*/
-/*2.24 - Compatible with wordpress 3.4.2*/
-/*2.25 - Fixed PHP 5 bug*/
-/*2.26 - Compatible with wordpress 3.5*/
-/*2.27 - Compatible with wordpress 3.5.1*/
-/*
-2.28 - wp_print_scripts and wp_print_styles should not be used to enqueue styles or scripts on the front page. Use wp_enqueue_scripts instead.
-*/
-/*2.28.1 - Fixed PHP 5 comment bug that got reintroduced into plugin*/
 add_action( 'plugins_loaded', 'jqlb_init' );
 function jqlb_init() {
 	if(!defined('ULFBEN_DONATE_URL')){
 		define('ULFBEN_DONATE_URL', 'http://onlinewebapplication.com/');
 	}
-	
-	//JQLB_PLUGIN_DIR == plugin_dir_path(__FILE__); 
-	//JQLB_URL = plugin_dir_url(__FILE__);
-	//JQLB_STYLES_URL = plugin_dir_url(__FILE__).'styles/'
-	//JQLB_LANGUAGES_DIR = plugin_dir_path(__FILE__) . 'I18n/'
+
 	define('JQLB_SCRIPT', 'wp-lightbox-2.min.js');
 	load_plugin_textdomain('jqlb', false, dirname( plugin_basename( __FILE__ ) ) . '/I18n/');	
-	//load_plugin_textdomain('jqlb', false, plugin_dir_path(__FILE__).'I18n/');
 	add_action('admin_init', 'jqlb_register_settings');
-	add_action('admin_menu', 'jqlb_register_menu_item');
+	//add_action('admin_menu', 'jqlb_register_menu_item');
 	add_action('wp_enqueue_scripts', 'jqlb_css');	
 	add_action('wp_enqueue_scripts', 'jqlb_js');
-	add_filter('plugin_row_meta', 	'jqlb_set_plugin_meta', 2, 10);	
+	//add_filter('plugin_row_meta', 	'jqlb_set_plugin_meta', 2, 10);	
 	add_filter('the_content', 'jqlb_autoexpand_rel_wlightbox', 99);
 	if(get_option('jqlb_comments') == 1){
 		remove_filter('pre_comment_content', 'wp_rel_nofollow');
@@ -83,11 +67,11 @@ function jqlb_register_settings(){
 	register_setting( 'jqlb-settings-group', 'jqlb_margin_size', 'floatval');
 	register_setting( 'jqlb-settings-group', 'jqlb_resize_speed', 'jqlb_pos_intval');
 	register_setting( 'jqlb-settings-group', 'jqlb_help_text');
-	register_setting( 'jqlb-settings-group', 'jqlb_link_target');
+
 	
 	//register_setting( 'jqlb-settings-group', 'jqlb_follow_scroll', 'jqlb_bool_intval');
 	add_option('jqlb_help_text', '');
-	add_option('jqlb_link_target', '_self');
+
 	add_option('jqlb_automate', 1); //default is to auto-lightbox.
 	add_option('jqlb_comments', 1);
 	add_option('jqlb_resize_on_demand', 0); 
@@ -114,16 +98,24 @@ function jqlb_css(){
 	$locale = jqlb_get_locale();
 	$fileName = "lightbox.min.{$locale}.css";	
 	$path = plugin_dir_path(__FILE__)."styles/{$fileName}";
+
 	if(!is_readable($path)){
 		$fileName = 'lightbox.min.css';
 	}
-	wp_enqueue_style('wp-lightbox-2.min.css', plugin_dir_url(__FILE__).'styles/'.$fileName, false, '1.3.4');	
+	wp_enqueue_style('wp-lightbox-2.min.css', plugin_dir_url(__FILE__).'styles/'.$fileName, false, '1.3.4');
+	// add custom (dinamic) styles for wp lightbox 2
+	?>
+
+	  <?php	
 }
 function jqlb_js() {			   	
 	if(is_admin() || is_feed()){return;}
 	wp_enqueue_script('jquery', '', array(), '1.7.1', true);			
 	wp_enqueue_script('wp-jquery-lightbox', plugins_url(JQLB_SCRIPT, __FILE__ ),  Array('jquery'), '1.3.4.1', true);
-	wp_localize_script('wp-jquery-lightbox', 'JQLBSettings', array(
+	global $wp_lightbox_2;
+	$wp_lightbox_2->parametrs;
+
+	$parametrs_array=array(
 		'fitToScreen' => get_option('jqlb_resize_on_demand'),
 		'resizeSpeed' => get_option('jqlb_resize_speed'),
 		'displayDownloadLink' => get_option('jqlb_show_download'),
@@ -132,18 +124,21 @@ function jqlb_js() {
 		'resizeCenter' => get_option('jqlb_resizeCenter'),
 		'marginSize' => get_option('jqlb_margin_size'),
 		'linkTarget' => get_option('jqlb_link_target'),
-		//'followScroll' => get_option('jqlb_follow_scroll'),
-		/* translation */
 		'help' => __(get_option('jqlb_help_text'), 'jqlb'),
-		'prevLinkTitle' => __('previous image', 'jqlb'),
-		'nextLinkTitle' => __('next image', 'jqlb'),
+		'prevLinkTitle' => $wp_lightbox_2->parametrs->get_design_settings['jqlb_previous_image_title'],
+		'nextLinkTitle' => $wp_lightbox_2->parametrs->get_design_settings['jqlb_next_image_title'],
 		'prevLinkText' =>  __('&laquo; Previous', 'jqlb'),
 		'nextLinkText' => __('Next &raquo;', 'jqlb'),
-		'closeTitle' => __('close image gallery', 'jqlb'),
+		'closeTitle' => $wp_lightbox_2->parametrs->get_design_settings['jqlb_close_image_title'],
 		'image' => __('Image ', 'jqlb'),
 		'of' => __(' of ', 'jqlb'),
 		'download' => __('Download', 'jqlb')
-	));
+	);
+
+	foreach($wp_lightbox_2->parametrs->get_design_settings as $key =>$value){
+		$parametrs_array[$key]	=$value;
+	}
+	wp_localize_script('wp-jquery-lightbox', 'JQLBSettings', $parametrs_array);
 }
 
 function jqlb_lightbox_comment($comment){
@@ -195,9 +190,6 @@ function jqlb_options_panel(){
 	
 	<div class="wrap">
 	<h2>WP Lightbox 2</h2>	
-     <div id="sideblock" style="float:right;width:270px;margin-left:10px;"> 
-		 <iframe width=270 height=500 frameborder="0" src="http://demos.onlinewebapplication.com/wp-internal-links/SEOIinternalLinks.html"></iframe>
- 	</div>
 	<?php include_once(plugin_dir_path(__FILE__).'about.php'); ?>
 	<form method="post" action="options.php">
 		<table>
@@ -221,7 +213,7 @@ function jqlb_options_panel(){
 					<?php $check = get_option('jqlb_show_download') ? ' checked="yes" ' : ''; ?>
 					<input type="checkbox" id="jqlb_show_download" name="jqlb_show_download" value="1" <?php echo $check; ?> />
 					<label for="jqlb_show_download"> <?php _e('Show download link', 'jqlb') ?> </label>
-				</td>
+			</td>
 				<td>
 				<?php $target = get_option('jqlb_link_target'); ?>
 				<label for="jqlb_link_target" title="<?php _e('_blank: open the image in a new window or tab
@@ -289,7 +281,7 @@ _top: open the image in the full body of the window', 'jqlb') ?>"><?php _e('Targ
 			$text = @file($diskfile);
 			if($text !== false){
 				$text = implode("", $text);
-			}
+		      }
 		}
 		if($text === false){
 			$text = '<p>The documentation files are missing! Try <a href="http://wordpress.org/extend/plugins/wp-lightbox-2/">downloading</a> and <a href="http://wordpress.org/extend/plugins/wp-lightbox-2/installation/">re-installing</a> this lightbox plugin.</p>';
@@ -297,4 +289,86 @@ _top: open the image in the full body of the window', 'jqlb') ?>"><?php _e('Targ
 		echo $text;
 	?>
 	</div>	
-<?php }?>
+<?php }
+function jqlb_hex2rgba($color, $opacity = false) {
+
+	$default = 'rgb(0,0,0)';
+	if(empty($color))
+          return $default; 
+
+        if ($color[0] == '#' ) {
+        	$color = substr( $color, 1 );
+        }
+
+        if (strlen($color) == 6) {
+                $hex = array( $color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5] );
+        } elseif ( strlen( $color ) == 3 ) {
+                $hex = array( $color[0] . $color[0], $color[1] . $color[1], $color[2] . $color[2] );
+        } else {
+                return $default;
+        }
+
+        $rgb =  array_map('hexdec', $hex);
+
+        if($opacity){
+        	if(abs($opacity) > 1)
+        		$opacity = 1.0;
+        	$output = 'rgba('.implode(",",$rgb).','.$opacity.')';
+        } else {
+        	$output = 'rgb('.implode(",",$rgb).')';
+        }
+        return $output;
+}
+class wp_lightbox_2{
+	// required variables
+	
+	private $plugin_url;
+	
+	private $plugin_path;
+	
+	private $version;
+	
+	public $options;
+	
+	public $parametrs;	
+	
+	function __construct(){
+		
+		$this->plugin_url  = trailingslashit( plugins_url('', __FILE__ ) );
+		$this->plugin_path = trailingslashit( plugin_dir_path( __FILE__ ) );
+		$this->version     = 1.0;
+		require_once($this->plugin_path.'includes/install_database.php');		
+		$this->parametrs = new wp_lightbox2_database_params();	
+		$this->call_base_filters();
+		$this->create_admin_menu();	
+
+	}
+	
+	private function create_admin_menu(){
+		
+		require_once($this->plugin_path.'admin/admin_menu.php');
+		
+		$admin_menu = new wp_lightbox_admin_menu(array('plugin_url' => $this->plugin_url,'plugin_path' => $this->plugin_path,'databese_parametrs' =>$this->parametrs));
+		
+		add_action('admin_menu', array($admin_menu,'create_menu'));
+		
+	}	
+	public function registr_requeried_scripts(){		
+		wp_register_script('angularejs',$this->plugin_url.'admin/scripts/angular.min.js');
+		//wp_register_script('youtube_front_end_api_js',$this->plugin_url.'fornt_end/scripts/youtube_plus_front_end.js',array('jquery'));
+		//wp_register_script('youtube_api_js',"https://www.youtube.com/iframe_api",array('youtube_front_end_api_js'));
+		wp_register_style('admin_style_wp_lightbox',$this->plugin_url.'admin/styles/admin_themplate.css');
+		wp_register_style('jquery-ui-style',$this->plugin_url.'admin/styles/jquery-ui.css');		
+	}
+	public function enqueue_requeried_scripts(){	
+		wp_enqueue_style("jquery-ui-style");
+		wp_enqueue_script("jquery-ui-slider");
+	}
+	public function call_base_filters(){
+		add_action( 'init',  array($this,'registr_requeried_scripts') );
+		add_action( 'admin_head',  array($this,'enqueue_requeried_scripts') );
+	}
+  	
+
+}
+$wp_lightbox_2 = new wp_lightbox_2();

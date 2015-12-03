@@ -3,16 +3,20 @@
 
 function cpt_plugin_options()
     {
-        $options = get_option('cpto_options');
+        $options          =     cpt_get_options();
         
         if (isset($_POST['form_submit']))
             {
+                $options['show_reorder_interfaces'] = (array) $_POST['show_reorder_interfaces'];
+                $options['show_reorder_interfaces'] =   array_map( 'sanitize_key', $options['show_reorder_interfaces'] );
                     
-                $options['capability'] = $_POST['capability'];
+                $options['capability']              = sanitize_key($_POST['capability']);
                 
-                $options['autosort']    = isset($_POST['autosort'])     ? $_POST['autosort']    : '';
-                $options['adminsort']   = isset($_POST['adminsort'])    ? $_POST['adminsort']   : '';
-                    
+                $options['autosort']                = isset($_POST['autosort'])     ? intval($_POST['autosort'])    : '';
+                $options['adminsort']               = isset($_POST['adminsort'])    ? intval($_POST['adminsort'])   : '';
+                
+                $options['navigation_sort_apply']   = isset($_POST['navigation_sort_apply'])    ? intval($_POST['navigation_sort_apply'])   : '';
+                                    
                 echo '<div class="updated fade"><p>' . __('Settings Saved', 'cpt') . '</p></div>';
 
                 update_option('cpto_options', $options);
@@ -34,7 +38,41 @@ function cpt_plugin_options()
                                 <h2 class="subtitle"><?php _e('General', 'cpt') ?></h2>                              
                                 <table class="form-table">
                                     <tbody>
-                            
+                                        <tr valign="top">
+                                            <th scope="row" style="text-align: right;"><label><?php _e('Show / Hide re-order interface', 'cpt') ?></label></th>
+                                            <td>
+                                                <?php
+                                                
+                                                    $post_types = get_post_types();
+                                                    foreach( $post_types as $post_type_name ) 
+                                                        {
+                                                            //ignore list
+                                                            $ignore_post_types  =   array(
+                                                                                            'reply',
+                                                                                            'topic',
+                                                                                            'report',
+                                                                                            'status'  
+                                                                                            );
+                                                            
+                                                            if(in_array($post_type_name, $ignore_post_types))
+                                                                continue;
+                                                            
+                                                            if(is_post_type_hierarchical($post_type_name))
+                                                                continue;
+                                                                
+                                                            $post_type_data = get_post_type_object( $post_type_name );
+                                                            if($post_type_data->show_ui === FALSE)
+                                                                continue;
+                                                ?>
+                                                <p><label>
+                                                    <select name="show_reorder_interfaces[<?php echo $post_type_name ?>]">
+                                                        <option value="show" <?php if(isset($options['show_reorder_interfaces'][$post_type_name]) && $options['show_reorder_interfaces'][$post_type_name] == 'show') {echo ' selected="selected"';} ?>><?php _e( "Show", 'cpt' ) ?></option>
+                                                        <option value="hide" <?php if(isset($options['show_reorder_interfaces'][$post_type_name]) && $options['show_reorder_interfaces'][$post_type_name] == 'hide') {echo ' selected="selected"';} ?>><?php _e( "Hide", 'cpt' ) ?></option>
+                                                    </select> &nbsp;&nbsp;<?php echo $post_type_data->labels->singular_name ?>
+                                                </label><br />&nbsp;</p>
+                                                <?php  } ?>
+                                            </td>
+                                        </tr>
                                         <tr valign="top">
                                             <th scope="row" style="text-align: right;"><label><?php _e('Minimum Level to use this plugin', 'cpt') ?></label></th>
                                             <td>
@@ -43,63 +81,38 @@ function cpt_plugin_options()
                                                     <option value="edit_posts" <?php if (isset($options['capability']) && $options['capability'] == "edit_posts") echo 'selected="selected"'?>><?php _e('Contributor', 'cpt') ?></option>
                                                     <option value="publish_posts" <?php if (isset($options['capability']) && $options['capability'] == "publish_posts") echo 'selected="selected"'?>><?php _e('Author', 'cpt') ?></option>
                                                     <option value="publish_pages" <?php if (isset($options['capability']) && $options['capability'] == "publish_pages") echo 'selected="selected"'?>><?php _e('Editor', 'cpt') ?></option>
-                                                    <option value="install_plugins" <?php if (!isset($options['capability']) || empty($options['capability']) || (isset($options['capability']) && $options['capability'] == "install_plugins")) echo 'selected="selected"'?>><?php _e('Administrator', 'cpt') ?></option>
+                                                    <option value="switch_themes" <?php if (!isset($options['capability']) || empty($options['capability']) || (isset($options['capability']) && $options['capability'] == "switch_themes")) echo 'selected="selected"'?>><?php _e('Administrator', 'cpt') ?></option>
                                                 </select>
                                             </td>
                                         </tr>
                                         
                                         <tr valign="top">
-                                            <th scope="row" style="text-align: right;"><label><?php _e('Auto Sort', 'cpt') ?></label></th>
+                                            <th scope="row" style="text-align: right;"><label for="autosort"><?php _e('Auto Sort', 'cpt') ?></label></th>
                                             <td>
-                                                <label for="users_can_register">
-                                                <input type="checkbox" <?php if ($options['autosort'] == "1") {echo ' checked="checked"';} ?> value="1" name="autosort">
-                                                <?php _e("If checked, the plug-in will automatically update the wp-queries to use the new order (<b>No code update is necessarily</b>).<br /> If you need more order customizations you will need to uncheck this and include 'menu_order' into your theme queries", 'cpt') ?>.</label>
+                                                <p><input type="checkbox" <?php if ($options['autosort'] == "1") {echo ' checked="checked"';} ?> id="autosort" value="1" name="autosort"> <?php _e("If checked, the plug-in automatically update the WordPress queries to use the new order (<b>No code update is necessarily</b>)", 'cpt'); ?></p>
+                                                <p class="description"><?php _e("If only certain queries need to use the custom sort, keep this unchecked and include 'orderby' => 'menu_order' into query parameters", 'cpt') ?>.
+                                                <br />
+                                                <a href="http://www.nsp-code.com/sample-code-on-how-to-apply-the-sort-for-post-types-order-plugin/" target="_blank"><?php _e('Additional Description and Examples', 'cpt') ?></a></p>
                                                 
-                                                <p><a href="javascript:;" onclick="jQuery('#example1').slideToggle();;return false;"><?php _e('Show Examples', 'cpt') ?></a></p>
-                                                <div id="example1" style="display: none">
-                                                
-                                                <p class="example"><br /><?php _e('The following PHP code will still return the post in the set-up Order', 'cpt') ?>:</p>
-                                                <pre class="example">
-$args = array(
-              'post_type' => 'feature'
-            );
-
-$my_query = new WP_Query($args);
-while ($my_query->have_posts())
-    {
-        $my_query->the_post();
-        (..your code..)          
-    }
-</pre>
-<p class="example"><br /><?php _e('Or', 'cpt') ?>:</p>
-                                                <pre class="example">
-$posts = get_posts($args);
-foreach ($posts as $post)
-    {
-        (..your code..)     
-    }
-                                                </pre>
-                                                
-<p class="example"><br /><?php _e('If the Auto Sort is uncheck you will need to use the "orderby" and "order" parameters', 'cpt') ?>:</p>
-<pre class="example">
-$args = array(
-              'post_type' => 'feature',
-              'orderby'   => 'menu_order',
-              'order'     => 'ASC'
-            );
-</pre>
-                                                
-                                                </div>
                                             </td>
                                         </tr>
                                         
                                         
                                         <tr valign="top">
-                                            <th scope="row" style="text-align: right;"><label><?php _e('Admin Sort', 'cpt') ?></label></th>
+                                            <th scope="row" style="text-align: right;"><label for="adminsort"><?php _e('Admin Sort', 'cpt') ?></label></th>
                                             <td>
-                                                <label for="users_can_register">
-                                                <input type="checkbox" <?php if ($options['adminsort'] == "1") {echo ' checked="checked"';} ?> value="1" name="adminsort">
-                                                <?php _e("To affect the admin interface, to see the post types per your new sort, this need to be checked", 'cpt') ?>.</label>
+                                                <p>
+                                                <input type="checkbox" <?php if ($options['adminsort'] == "1") {echo ' checked="checked"';} ?> id="adminsort" value="1" name="adminsort">
+                                                <?php _e("To affect the admin interface, to see the post types per your new sort, this need to be checked", 'cpt') ?>.</p>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr valign="top">
+                                            <th scope="row" style="text-align: right;"><label for="navigation_sort_apply"><?php _e('Next / Previous Apply', 'cpt') ?></label></th>
+                                            <td>
+                                                <p>
+                                                <input type="checkbox" <?php if ($options['navigation_sort_apply'] == "1") {echo ' checked="checked"';} ?> id="navigation_sort_apply" value="1" name="navigation_sort_apply">
+                                                <?php _e("Apply the sort on Next / Previous site-wide navigation.", 'cpt') ?> <?php _e('This can also be controlled through', 'cpt') ?> <a href="http://www.nsp-code.com/apply-custom-sorting-for-next-previous-site-wide-navigation/" target="_blank"><?php _e('code', 'cpt') ?></a></p>
                                             </td>
                                         </tr>
                                         

@@ -17,7 +17,7 @@ class blcBookmark extends blcContainer{
 		
 		$image = sprintf(
 			'<img src="%1$s" class="blc-small-image" title="%2$s" alt="%2$s">',
-			esc_attr( plugins_url('/images/link.png', BLC_PLUGIN_FILE) ),
+			esc_attr( plugins_url('/images/font-awesome/font-awesome-link.png', BLC_PLUGIN_FILE) ),
 			__('Bookmark', 'broken-link-checker')						
 		);
 		
@@ -37,7 +37,7 @@ class blcBookmark extends blcContainer{
 	
 	function ui_get_action_links($container_field){
 		//Inline action links for bookmarks     
-		$bookmark = &$this->get_wrapped_object();
+		$bookmark = $this->get_wrapped_object();
 		
 		$delete_url = admin_url( wp_nonce_url("link.php?action=delete&link_id={$this->container_id}", 'delete-bookmark_' . $this->container_id) ); 
 		

@@ -7,6 +7,7 @@
 	/* @var future_count int */
 	/* @var pending_count int */
 	/* @var url string */
+	/* @var show_add_new bool */
 	//add new button will only appear if called from em_event_admin template tag, or if the $show_add_new var is set
 	if(!empty($show_add_new) && current_user_can('edit_events')) echo '<a class="em-button button add-new-h2" href="'.em_add_get_params($_SERVER['REQUEST_URI'],array('action'=>'edit','scope'=>null,'status'=>null,'event_id'=>null, 'success'=>null)).'">'.__('Add New','dbem').'</a>';
 	?>
@@ -15,18 +16,21 @@
 		<form id="posts-filter" action="" method="get">
 			<div class="subsubsub">
 				<?php $default_params = array('scope'=>null,'status'=>null,'em_search'=>null,'pno'=>null); //template for cleaning the link for each view below ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'future')); ?>' <?php echo ( !isset($_GET['status']) ) ? 'class="current"':''; ?>><?php _e ( 'Upcoming', 'dbem' ); ?> <span class="count">(<?php echo $future_count; ?>)</span></a> &nbsp;|&nbsp; 
+				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'future')); ?>' <?php echo ( !isset($_GET['view']) ) ? 'class="current"':''; ?>><?php _e ( 'Upcoming', 'dbem' ); ?> <span class="count">(<?php echo $future_count; ?>)</span></a> &nbsp;|&nbsp; 
 				<?php if( $pending_count > 0 ): ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'pending')); ?>' <?php echo ( !empty($_REQUEST['scope']) && $_REQUEST['scope'] == 'all' && !isset($_GET['status']) ) ? 'class="current"':''; ?>><?php _e ( 'Pending', 'dbem' ); ?> <span class="count">(<?php echo $pending_count; ?>)</span></a> &nbsp;|&nbsp; 
+				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'pending')); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'pending' ) ? 'class="current"':''; ?>><?php _e ( 'Pending', 'dbem' ); ?> <span class="count">(<?php echo $pending_count; ?>)</span></a> &nbsp;|&nbsp; 
 				<?php endif; ?>
 				<?php if( $draft_count > 0 ): ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'draft')); ?>' <?php echo ( isset($_GET['status']) && $_GET['status']=='draft' ) ? 'class="current"':''; ?>><?php _e ( 'Draft', 'dbem' ); ?> <span class="count">(<?php echo $draft_count; ?>)</span></a> &nbsp;|&nbsp;
+				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'draft')); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'draft' ) ? 'class="current"':''; ?>><?php _e ( 'Draft', 'dbem' ); ?> <span class="count">(<?php echo $draft_count; ?>)</span></a> &nbsp;|&nbsp;
 				<?php endif; ?>
-				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'past')); ?>' <?php echo ( !empty($_REQUEST['scope']) && $_REQUEST['scope'] == 'past' ) ? 'class="current"':''; ?>><?php _e ( 'Past Events', 'dbem' ); ?> <span class="count">(<?php echo $past_count; ?>)</span></a>
+				<a href='<?php echo em_add_get_params($_SERVER['REQUEST_URI'], $default_params + array('view'=>'past')); ?>' <?php echo ( isset($_GET['view']) && $_GET['view'] == 'past' ) ? 'class="current"':''; ?>><?php _e ( 'Past Events', 'dbem' ); ?> <span class="count">(<?php echo $past_count; ?>)</span></a>
 			</div>
 			<p class="search-box">
 				<label class="screen-reader-text" for="post-search-input"><?php _e('Search Events','dbem'); ?>:</label>
-				<input type="text" id="post-search-input" name="em_search" value="<?php echo (!empty($_REQUEST['em_search'])) ? $_REQUEST['em_search']:''; ?>" />
+				<input type="text" id="post-search-input" name="em_search" value="<?php echo (!empty($_REQUEST['em_search'])) ? esc_attr($_REQUEST['em_search']):''; ?>" />
+				<?php if( !empty($_REQUEST['view']) ): ?>
+				<input type="hidden" name="view" value="<?php echo esc_attr($_REQUEST['view']); ?>" />
+				<?php endif; ?>
 				<input type="submit" value="<?php _e('Search Events','dbem'); ?>" class="button" />
 			</p>
 			<div class="tablenav">
@@ -71,7 +75,7 @@
 						$localised_end_date = date_i18n(get_option('dbem_date_format'), $EM_Event->end);
 						$style = "";
 						$today = current_time('timestamp');
-						$location_summary = "<b>" . $EM_Event->get_location()->location_name . "</b><br/>" . $EM_Event->get_location()->location_address . " - " . $EM_Event->get_location()->location_town;
+						$location_summary = "<b>" . esc_html($EM_Event->get_location()->location_name) . "</b><br/>" . esc_html($EM_Event->get_location()->location_address) . " - " . esc_html($EM_Event->get_location()->location_town);
 						
 						if ($EM_Event->start < $today && $EM_Event->end < $today){						
 							$class .= " past";
@@ -95,8 +99,8 @@
 								if( get_option('dbem_rsvp_enabled') == 1 && $EM_Event->event_rsvp == 1 ){
 									?>
 									<br/>
-									<a href="<?php echo esc_url($EM_Event->get_bookings_url()); ?>"><?php echo __("Bookings",'dbem'); ?></a> &ndash;
-									<?php _e("Booked",'dbem'); ?>: <?php echo $EM_Event->get_bookings()->get_booked_spaces()."/".$EM_Event->get_spaces(); ?>
+									<a href="<?php echo $EM_Event->get_bookings_url(); ?>"><?php esc_html_e("Bookings",'dbem'); ?></a> &ndash;
+									<?php esc_html_e("Booked",'dbem'); ?>: <?php echo $EM_Event->get_bookings()->get_booked_spaces()."/".$EM_Event->get_spaces(); ?>
 									<?php if( get_option('dbem_bookings_approval') == 1 ): ?>
 										| <?php _e("Pending",'dbem') ?>: <?php echo $EM_Event->get_bookings()->get_pending_spaces(); ?>
 									<?php endif;
@@ -109,7 +113,7 @@
 								</div>
 							</td>
 							<td>
-								<a href="<?php echo esc_url(add_query_arg(array('action'=>'event_duplicate', 'event_id'=>$EM_Event->event_id, '_wpnonce'=> wp_create_nonce('event_duplicate_'.$EM_Event->event_id)))); ?>" title="<?php _e ( 'Duplicate this event', 'dbem' ); ?>">
+								<a href="<?php echo $EM_Event->duplicate_url(); ?>" title="<?php _e ( 'Duplicate this event', 'dbem' ); ?>">
 									<strong>+</strong>
 								</a>
 							</td>

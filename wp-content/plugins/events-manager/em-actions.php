@@ -77,7 +77,7 @@ function em_init_actions() {
 					$EM_Notices->add_confirm( $EM_Event->output(get_option('dbem_events_anonymous_result_success')), true);
 				}
 				$redirect = !empty($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : wp_get_referer();
-				$redirect = em_add_get_params($redirect, array('success'=>1));
+				$redirect = em_add_get_params($redirect, array('success'=>1), false, false);
 				wp_redirect( $redirect );
 				exit();
 			}else{
@@ -86,13 +86,14 @@ function em_init_actions() {
 			}
 		}
 		if ( $_REQUEST['action'] == 'event_duplicate' && wp_verify_nonce($_REQUEST['_wpnonce'],'event_duplicate_'.$EM_Event->event_id) ) {
-			$EM_Event = $EM_Event->duplicate();
-			if( $EM_Event === false ){
+			$event = $EM_Event->duplicate();
+			if( $event === false ){
 				$EM_Notices->add_error($EM_Event->errors, true);
+				wp_redirect( wp_get_referer() );
 			}else{
 				$EM_Notices->add_confirm($EM_Event->feedback_message, true);
+				wp_redirect( $event->get_edit_url() );
 			}
-			wp_redirect( wp_get_referer() );
 			exit();
 		}
 		if ( $_REQUEST['action'] == 'event_delete' && wp_verify_nonce($_REQUEST['_wpnonce'],'event_delete_'.$EM_Event->event_id) ) { 
@@ -139,7 +140,9 @@ function em_init_actions() {
 				$return = array('result'=>true, 'message'=>$EM_Event->feedback_message);
 			}else{		
 				$return = array('result'=>false, 'message'=>$EM_Event->feedback_message, 'errors'=>$EM_Event->errors);
-			}	
+			}
+			echo EM_Object::json_encode($return);
+			edit();
 		}
 	}
 	
@@ -152,7 +155,7 @@ function em_init_actions() {
 		}else{
 			$EM_Location = new EM_Location();
 		}
-		if( $_REQUEST['action'] == 'location_save' && current_user_can('edit_locations') ){
+		if( $_REQUEST['action'] == 'location_save' && $EM_Location->can_manage('edit_locations','edit_others_locations') ){
 			//Check Nonces
 			em_verify_nonce('location_save');
 			//Grab and validate submitted data
@@ -389,7 +392,7 @@ function em_init_actions() {
 			if( $EM_Booking->can_manage('manage_bookings','manage_others_bookings') && $_REQUEST['booking_status'] != $EM_Booking->booking_status ){
 				if ( $EM_Booking->set_status($_REQUEST['booking_status'], false, true) ){
 					if( !empty($_REQUEST['send_email']) ){
-						if( $EM_Booking->email(false) ){
+						if( $EM_Booking->email() ){
 						    if( $EM_Booking->mails_sent > 0 ) {
 						        $EM_Booking->feedback_message .= " ".__('Email Sent.','dbem');
 						    }else{
@@ -450,10 +453,12 @@ function em_init_actions() {
 		}
 		if( $result && defined('DOING_AJAX') ){
 			$return = array('result'=>true, 'message'=>$feedback);
+			header( 'Content-Type: application/javascript; charset=UTF-8', true ); //add this for HTTP -> HTTPS requests which assume it's a cross-site request
 			echo EM_Object::json_encode(apply_filters('em_action_'.$_REQUEST['action'], $return, $EM_Booking));
 			die();
 		}elseif( !$result && defined('DOING_AJAX') ){
 			$return = array('result'=>false, 'message'=>$feedback, 'errors'=>$EM_Notices->get_errors());
+			header( 'Content-Type: application/javascript; charset=UTF-8', true ); //add this for HTTP -> HTTPS requests which assume it's a cross-site request
 			echo EM_Object::json_encode(apply_filters('em_action_'.$_REQUEST['action'], $return, $EM_Booking));
 			die();
 		}
@@ -468,6 +473,7 @@ function em_init_actions() {
 	
 	//AJAX call for searches
 	if( !empty($_REQUEST['action']) && substr($_REQUEST['action'],0,6) == 'search' ){
+		//default search arts
 		if( $_REQUEST['action'] == 'search_states' ){
 			$results = array();
 			$conds = array();
@@ -475,7 +481,7 @@ function em_init_actions() {
 				$conds[] = $wpdb->prepare("(location_country = '%s' OR location_country IS NULL )", $_REQUEST['country']);
 			}
 			if( !empty($_REQUEST['region']) ){
-				$conds[] = $wpdb->prepare("( location_region = '%s' OR location_region IS NULL )", $_REQUEST['region']);
+				$conds[] = $wpdb->prepare("( location_region = '%s' )", $_REQUEST['region']);
 			}
 			$cond = (count($conds) > 0) ? "AND ".implode(' AND ', $conds):'';
 			$results = $wpdb->get_col("SELECT DISTINCT location_state FROM " . EM_LOCATIONS_TABLE ." WHERE location_state IS NOT NULL AND location_state != '' $cond ORDER BY location_state");
@@ -503,10 +509,10 @@ function em_init_actions() {
 				$conds[] = $wpdb->prepare("(location_country = '%s' OR location_country IS NULL )", $_REQUEST['country']);
 			}
 			if( !empty($_REQUEST['region']) ){
-				$conds[] = $wpdb->prepare("( location_region = '%s' OR location_region IS NULL )", $_REQUEST['region']);
+				$conds[] = $wpdb->prepare("( location_region = '%s' )", $_REQUEST['region']);
 			}
 			if( !empty($_REQUEST['state']) ){
-				$conds[] = $wpdb->prepare("(location_state = '%s' OR location_state IS NULL )", $_REQUEST['state']);
+				$conds[] = $wpdb->prepare("(location_state = '%s' )", $_REQUEST['state']);
 			}
 			$cond = (count($conds) > 0) ? "AND ".implode(' AND ', $conds):'';
 			$results = $wpdb->get_col("SELECT DISTINCT location_town FROM " . EM_LOCATIONS_TABLE ." WHERE location_town IS NOT NULL AND location_town != '' $cond  ORDER BY location_town");
@@ -528,8 +534,9 @@ function em_init_actions() {
 			}
 		}
 		if( $_REQUEST['action'] == 'search_regions' ){
+			$results = array();
 			if( !empty($_REQUEST['country']) ){
-				$conds[] = $wpdb->prepare("(location_country = '%s' OR location_country IS NULL )", $_REQUEST['country']);
+				$conds[] = $wpdb->prepare("(location_country = '%s' )", $_REQUEST['country']);
 			}
 			$cond = (count($conds) > 0) ? "AND ".implode(' AND ', $conds):'';
 			$results = $wpdb->get_results("SELECT DISTINCT location_region AS value FROM " . EM_LOCATIONS_TABLE ." WHERE location_region IS NOT NULL AND location_region != '' $cond  ORDER BY location_region");
@@ -549,16 +556,6 @@ function em_init_actions() {
 				echo EM_Object::json_encode($results);
 				exit();
 			}
-		}elseif( $_REQUEST['action'] == 'search_events' && get_option('dbem_events_page_search') && defined('DOING_AJAX') ){
-			$args = EM_Events::get_post_search();
-			if( empty($args['scope']) ){
-			    $args['scope'] = get_option('dbem_events_page_scope');
-			}
-			$args['owner'] = false;
-			ob_start();
-			em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
-			echo apply_filters('em_ajax_search_events', ob_get_clean(), $args);	
-			exit();			
 		}
 	}
 		
@@ -569,13 +566,19 @@ function em_init_actions() {
 		if( !empty($_REQUEST['em_obj']) ){
 			switch( $_REQUEST['em_obj'] ){
 				case 'em_bookings_events_table':
+					include_once('admin/bookings/em-events.php');
+					em_bookings_events_table();
+					exit();
+					break;
 				case 'em_bookings_pending_table':
+					include_once('admin/bookings/em-pending.php');
+					em_bookings_pending_table();
+					exit();
+					break;
 				case 'em_bookings_confirmed_table':
 					//add some admin files just in case
 					include_once('admin/bookings/em-confirmed.php');
-					include_once('admin/bookings/em-events.php');
-					include_once('admin/bookings/em-pending.php');
-					call_user_func($_REQUEST['em_obj']);
+					em_bookings_confirmed_table();
 					exit();
 					break;
 			}
@@ -603,6 +606,7 @@ function em_init_actions() {
 		$file_name = !empty($EM_Event->event_slug) ? $EM_Event->event_slug:get_bloginfo();
 		header("Content-Disposition: Attachment; filename=".sanitize_title($file_name)."-bookings-export.csv");
 		do_action('em_csv_header_output');
+		echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 		if( !defined('EM_CSV_DISABLE_HEADERS') || !EM_CSV_DISABLE_HEADERS ){
 			if( !empty($_REQUEST['event_id']) ){
 				echo __('Event','dbem') . ' : ' . $EM_Event->event_name .  "\n";
@@ -616,6 +620,7 @@ function em_init_actions() {
 		$EM_Bookings_Table->limit = 150; //if you're having server memory issues, try messing with this number
 		$EM_Bookings = $EM_Bookings_Table->get_bookings();
 		$handle = fopen("php://output", "w");
+		$delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
 		while(!empty($EM_Bookings->bookings)){
 			foreach( $EM_Bookings->bookings as $EM_Booking ) {
 				//Display all values
@@ -624,11 +629,11 @@ function em_init_actions() {
 				if( $show_tickets ){
 					foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking){
 						$row = $EM_Bookings_Table->get_row_csv($EM_Ticket_Booking);
-						fputcsv($handle, $row);
+						fputcsv($handle, $row, $delimiter);
 					}
 				}else{
 					$row = $EM_Bookings_Table->get_row_csv($EM_Booking);
-					fputcsv($handle, $row);
+					fputcsv($handle, $row, $delimiter);
 				}
 			}
 			//reiterate loop
@@ -641,11 +646,88 @@ function em_init_actions() {
 }  
 add_action('init','em_init_actions',11);
 
+/**
+ * Handles AJAX Bookings admin table filtering, view changes and pagination
+ */
 function em_ajax_bookings_table(){
+    check_admin_referer('em_bookings_table');
 	$EM_Bookings_Table = new EM_Bookings_Table();
 	$EM_Bookings_Table->output_table();
 	exit();
 }
 add_action('wp_ajax_em_bookings_table','em_ajax_bookings_table');
 
+/**
+ * Handles AJAX Searching and Pagination for events, locations, tags and categories
+ */
+function em_ajax_search_and_pagination(){
+	$args = array( 'owner' => false, 'pagination' => 1, 'ajax' => true);
+	echo '<div class="em-search-ajax">';
+	ob_start();
+	if( $_REQUEST['action'] == 'search_events' ){
+		$args['scope'] = get_option('dbem_events_page_scope');
+		$args = EM_Events::get_post_search($args);
+		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
+		em_locate_template('templates/events-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+	}elseif( $_REQUEST['action'] == 'search_events_grouped' && defined('DOING_AJAX') ){
+		$args['scope'] = get_option('dbem_events_page_scope');
+		$args = EM_Events::get_post_search($args);
+		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_events_default_limit');
+		em_locate_template('templates/events-list-grouped.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+	}elseif( $_REQUEST['action'] == 'search_locations' && defined('DOING_AJAX') ){
+		$args = EM_Locations::get_post_search($args);
+		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_locations_default_limit');
+		em_locate_template('templates/locations-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+	}elseif( $_REQUEST['action'] == 'search_tags' && defined('DOING_AJAX') ){
+		$args = EM_Tags::get_post_search($args);
+		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_tags_default_limit');
+		em_locate_template('templates/tags-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+	}elseif( $_REQUEST['action'] == 'search_cats' && defined('DOING_AJAX') ){
+		$args = EM_Categories::get_post_search($args);
+		$args['limit'] = !empty($args['limit']) ? $args['limit'] : get_option('dbem_categories_default_limit');
+		em_locate_template('templates/categories-list.php', true, array('args'=>$args)); //if successful, this template overrides the settings and defaults, including search
+	}
+	echo '</div>';
+	echo apply_filters('em_ajax_'.$_REQUEST['action'], ob_get_clean(), $args);
+	exit();
+}
+add_action('wp_ajax_nopriv_search_events','em_ajax_search_and_pagination');
+add_action('wp_ajax_search_events','em_ajax_search_and_pagination');
+add_action('wp_ajax_nopriv_search_events_grouped','em_ajax_search_and_pagination');
+add_action('wp_ajax_search_events_grouped','em_ajax_search_and_pagination');
+add_action('wp_ajax_nopriv_search_locations','em_ajax_search_and_pagination');
+add_action('wp_ajax_search_locations','em_ajax_search_and_pagination');
+add_action('wp_ajax_nopriv_search_tags','em_ajax_search_and_pagination');
+add_action('wp_ajax_search_tags','em_ajax_search_and_pagination');
+add_action('wp_ajax_nopriv_search_cats','em_ajax_search_and_pagination');
+add_action('wp_ajax_search_cats','em_ajax_search_and_pagination');
+
+/*
+Added in dev 5.4.4.2 but may delete in favour of Google autocomplete service
+function em_ajax_geocoding_search(){
+	//GeoNames
+	if( !empty($_REQUEST['q']) && get_option('dbem_geonames_username') ){
+		$url = 'http://api.geonames.org/searchJSON?username='.get_option('dbem_geonames_username').'&featureClass=p&style=full&maxRows=12&q=' . rawurlencode(utf8_encode($_REQUEST['q']));
+		if( !empty($_REQUEST['country']) ){
+			$url .= '&countryBias=' . rawurlencode(utf8_encode($_REQUEST['country']));	
+		}
+		if( !empty($_REQUEST['callback']) ){
+			$url .= '&callback=' . rawurlencode(utf8_encode($_REQUEST['callback']));
+		}
+	};
+	if( !empty($url) ){
+		$return = wp_remote_get($url);
+		if( !is_wp_error($return) ){
+			echo $return['body'];
+			die();
+		}
+	}
+	//If nothing is set up
+	$default = array('geonames'=>array(array('name'=>'No Information Available','lat'=>'', 'lng'=>'', 'adminName1'=> '', 'countryName'=>'')));
+	echo json_encode($default);
+	die();
+}
+add_action('wp_ajax_nopriv_geocoding_search','em_ajax_geocoding_search');
+add_action('wp_ajax_geocoding_search','em_ajax_geocoding_search');
+*/
 ?>

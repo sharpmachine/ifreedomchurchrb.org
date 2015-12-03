@@ -3,7 +3,7 @@
 /**
  * Generic file and database backup class
  *
- * @version 2.1
+ * @version 2.3
  */
 class WPRP_HM_Backup {
 
@@ -22,6 +22,14 @@ class WPRP_HM_Backup {
 	 * @access private
 	 */
 	private $type = '';
+
+	/**
+	 * The start timestamp of the backup
+	 * 
+	 * @int
+	 * @access protected
+	 */
+	protected $start_timestamp;
 
 	/**
 	 * The filename of the backup file
@@ -139,15 +147,62 @@ class WPRP_HM_Backup {
 	private $mysqldump_method = '';
 
 	/**
+	 * Whether or not to use a file manifest (more write-intensive)
+	 * 
+	 * @var bool
+	 * @access private
+	 */
+	private $using_file_manifest = false;
+
+	/**
+	 * The current file manifest file.
+	 * 
+	 * @access private
+	 */
+	private $current_file_manifest = false;
+
+
+	/**
+	 * Files of the file manifest that have already been archived
+	 * 
+	 * @access private
+	 */
+	private $file_manifest_already_archived = array();
+
+	/**
+	 * When using the file manifest, the number of files that should be
+	 * archived per batch.
+	 * 
+	 * @access private
+	 */
+	private $file_manifest_per_batch = 200;
+
+	/**
+	 * Files remaining to be achived in the file manifest.
+	 * 
+	 * @access protected
+	 */
+	protected $file_manifest_remaining = 0;
+
+	/**
+	 * A ZipArchive instance for this instance
+	 */
+	private $ziparchive = false;
+
+	/**
+	 * A PclZip instance for this instance
+	 */
+	private $pclzip = false;
+
+	/**
 	 * Check whether safe mode is active or not
 	 *
-	 * @access public
-	 * @static
+	 * @param string $ini_get_callback
 	 * @return bool
 	 */
-	public static function is_safe_mode_active() {
+	public static function is_safe_mode_active( $ini_get_callback = 'ini_get' ) {
 
-		if ( ( $safe_mode = @ini_get( 'safe_mode' ) ) && strtolower( $safe_mode ) != 'off' )
+		if ( ( $safe_mode = @call_user_func( $ini_get_callback, 'safe_mode' ) ) && strtolower( $safe_mode ) != 'off' )
 			return true;
 
 		return false;
@@ -167,8 +222,12 @@ class WPRP_HM_Backup {
 		if ( self::is_safe_mode_active() )
 			return false;
 
-		// Is shell_exec disabled?
-		if ( in_array( 'shell_exec', array_map( 'trim', explode( ',', @ini_get( 'disable_functions' ) ) ) ) )
+		// Is shell_exec or escapeshellcmd or escapeshellarg disabled?
+		if ( array_intersect( array( 'shell_exec', 'escapeshellarg', 'escapeshellcmd' ), array_map( 'trim', explode( ',', @ini_get( 'disable_functions' ) ) ) ) )
+			return false;
+
+		// Functions can also be disabled via suhosin
+		if ( array_intersect( array( 'shell_exec', 'escapeshellarg', 'escapeshellcmd' ), array_map( 'trim', explode( ',', @ini_get( 'suhosin.executor.func.blacklist' ) ) ) ) )
 			return false;
 
 		// Can we issue a simple echo command?
@@ -197,7 +256,7 @@ class WPRP_HM_Backup {
 
 		// If site_url contains home_url and they differ then assume WordPress is installed in a sub directory
 		if ( $home_url !== $site_url && strpos( $site_url, $home_url ) === 0 )
-			$home_path = trailingslashit( substr( ABSPATH, 0, strrpos( ABSPATH, str_replace( $home_url, '', $site_url ) ) ) );
+			$home_path = trailingslashit( substr( self::conform_dir( ABSPATH ), 0, strrpos( self::conform_dir( ABSPATH ), str_replace( $home_url, '', $site_url ) ) ) );
 
 		return self::conform_dir( $home_path );
 
@@ -206,10 +265,8 @@ class WPRP_HM_Backup {
 	/**
 	 * Sanitize a directory path
 	 *
-	 * @access public
-	 * @static
 	 * @param string $dir
-	 * @param bool $rel. (default: false)
+	 * @param bool   $recursive (default: false)
 	 * @return string $dir
 	 */
 	public static function conform_dir( $dir, $recursive = false ) {
@@ -270,8 +327,13 @@ class WPRP_HM_Backup {
 	 */
 	public function get_archive_filename() {
 
-		if ( empty( $this->archive_filename ) )
-			$this->set_archive_filename( implode( '-', array( sanitize_title( str_ireplace( array( 'http://', 'https://', 'www' ), '', home_url() ) ), 'backup', date( 'Y-m-d-H-i-s', current_time( 'timestamp' ) ) ) ) . '.zip' );
+		if ( empty( $this->archive_filename ) ) {
+
+			if ( empty( $this->start_timestamp ) )
+				$this->start_timestamp = current_time( 'timestamp' );
+
+			$this->set_archive_filename( implode( '-', array( sanitize_title( str_ireplace( array( 'http://', 'https://', 'www' ), '', home_url() ) ), 'backup', date( 'Y-m-d-H-i-s', $this->start_timestamp ) ) ) . '.zip' );
+		}
 
 		return $this->archive_filename;
 
@@ -280,16 +342,16 @@ class WPRP_HM_Backup {
 	/**
 	 * Set the filename of the archive file
 	 *
-	 * @access public
 	 * @param string $filename
+	 * @throws Exception
 	 */
 	public function set_archive_filename( $filename ) {
 
 		if ( empty( $filename ) || ! is_string( $filename ) )
-			throw new Exception( 'archive filename must be a non empty string' );
+			throw new Exception( __( 'archive filename must be a non empty string', 'wpremote' ) );
 
 		if ( pathinfo( $filename, PATHINFO_EXTENSION ) !== 'zip' )
-			throw new Exception( 'invalid file extension for archive filename <code>' . $filename . '</code>' );
+			throw new Exception( __( 'invalid file extension for archive filename', 'wpremote' ) .  '<code>' . $filename . '</code>' );
 
 		$this->archive_filename = strtolower( sanitize_file_name( remove_accents( $filename ) ) );
 
@@ -325,16 +387,16 @@ class WPRP_HM_Backup {
 	/**
 	 * Set the filename of the database dump file
 	 *
-	 * @access public
 	 * @param string $filename
+	 * @throws Exception
 	 */
 	public function set_database_dump_filename( $filename ) {
 
 		if ( empty( $filename ) || ! is_string( $filename ) )
-			throw new Exception( 'database dump filename must be a non empty string' );
+			throw new Exception( __( 'database dump filename must be a non empty string', 'wpremote' ) );
 
 		if ( pathinfo( $filename, PATHINFO_EXTENSION ) !== 'sql' )
-			throw new Exception( 'invalid file extension for database dump filename <code>' . $filename . '</code>' );
+			throw new Exception( __( 'invalid file extension for database dump filename', 'wpremote' ) . '<code>' . $filename . '</code>' );
 
 		$this->database_dump_filename = strtolower( sanitize_file_name( remove_accents( $filename ) ) );
 
@@ -357,17 +419,16 @@ class WPRP_HM_Backup {
 
     }
 
-    /**
-     * Set the root directory to backup from
-     *
-     * @access public
-     * @param string $path
-     * @return null
-     */
-    public function set_root( $path ) {
+	/**
+	 * Set the root directory to backup from
+	 *
+	 * @param string $path
+	 * @throws Exception
+	 */
+	public function set_root( $path ) {
 
     	if ( empty( $path ) || ! is_string( $path ) || ! is_dir ( $path ) )
-    		throw new Exception( 'Invalid root path <code>' . $path . '</code> must be a valid directory path' );
+    		throw new Exception( sprintf( __( 'Invalid root path %s must be a valid directory path', 'wpremote' ), '<code>' . $path . '</code>' ) );
 
     	$this->root = self::conform_dir( $path );
 
@@ -388,17 +449,16 @@ class WPRP_HM_Backup {
 
     }
 
-    /**
-     * Set the directory backups are saved to
-     *
-     * @access public
-     * @param string $path
-     * @return null
-     */
-    public function set_path( $path ) {
+	/**
+	 * Set the directory backups are saved to
+	 *
+	 * @param string $path
+	 * @throws Exception
+	 */
+	public function set_path( $path ) {
 
     	if ( empty( $path ) || ! is_string( $path ) )
-    		throw new Exception( 'Invalid backup path <code>' . $path . '</code> must be a non empty (string)' );
+    		throw new Exception( sptrinf( __( 'Invalid backup path %s must be a non empty (string)', wpremote ), '<code>' . $path . '</code>' ) );
 
     	$this->path = self::conform_dir( $path );
 
@@ -427,6 +487,161 @@ class WPRP_HM_Backup {
 	}
 
 	/**
+	 * Whether or not to use the file manifest
+	 * 
+	 * @access public
+	 */
+	public function is_using_file_manifest() {
+		return apply_filters( 'hmbkp_use_file_manifest', (bool)$this->using_file_manifest );
+	}
+
+	/**
+	 * Set whether or not to use the file manifest
+	 * 
+	 * @access public
+	 */
+	public function set_is_using_file_manifest( $val ) {
+		$this->using_file_manifest = (bool)$val;
+	}
+
+	/**
+	 * Create a series of file manifests for the backup
+	 * 
+	 * @access private
+	 */
+	private function create_file_manifests() {
+
+		if ( is_dir( $this->get_file_manifest_dirpath() ) )
+			$this->rmdir_recursive( $this->get_file_manifest_dirpath() );
+
+		mkdir( $this->get_file_manifest_dirpath(), 0755 );
+
+		// Protect against directory browsing by including a index.html file
+		$index = $this->get_file_manifest_dirpath() . '/index.html';
+		if ( ! file_exists( $index ) && is_writable( $this->get_file_manifest_dirpath() ) )
+			file_put_contents( $index, '' );
+
+		$excludes = $this->exclude_string( 'regex' );
+
+		$file_manifest = array();
+		$this->file_manifest_remaining = 0;
+		$file_manifest_file_count = 0;
+		$current_batch = 0;
+		foreach( $this->get_files() as $file ) {
+
+			// Skip dot files, they should only exist on versions of PHP between 5.2.11 -> 5.3
+			if ( method_exists( $file, 'isDot' ) && $file->isDot() )
+				continue;
+
+			// Skip unreadable files
+			if ( ! @realpath( $file->getPathname() ) || ! $file->isReadable() )
+				continue;
+
+		    // Excludes
+		    if ( $excludes && preg_match( '(' . $excludes . ')', str_ireplace( trailingslashit( $this->get_root() ), '', self::conform_dir( $file->getPathname() ) ) ) )
+		        continue;
+
+			if ( $file->isDir() )
+				$line = trailingslashit( str_ireplace( trailingslashit( $this->get_root() ), '', self::conform_dir( $file->getPathname() ) ) );
+
+			elseif ( $file->isFile() )
+				$line = str_ireplace( trailingslashit( $this->get_root() ), '', self::conform_dir( $file->getPathname() ) );
+
+			// File manifest is full
+			if ( ! empty( $current_file ) && $current_batch >= $this->file_manifest_per_batch ) {
+
+				@fclose( $current_file );
+				$current_file = false;
+
+			}
+
+			// Create a new file manifest
+			if ( empty( $current_file ) ) {
+
+				$file_manifest_file_count++;
+				$file_manifest_filename = str_pad( $file_manifest_file_count, 10, "0", STR_PAD_LEFT );
+				if ( ! $current_file = @fopen( $this->get_file_manifest_dirpath() . '/' . $file_manifest_filename . '.txt', 'w' ) )
+					return false;
+
+				$current_batch = 0;
+			}
+
+			// Write the line to the file manifest if it isn't empty for some reason
+			if ( ! empty( $line ) ) {
+				@fwrite( $current_file, $line . PHP_EOL );
+				unset( $line );
+				$this->file_manifest_remaining++;
+				$current_batch++;
+			}
+
+		}
+
+		@file_put_contents( $this->get_path() . '/.file-manifest-remaining', $this->file_manifest_remaining );
+
+		return true;
+	}
+
+	/**
+	 * Delete the current file manifest
+	 * 
+	 * @access private
+	 */
+	private function delete_current_file_manifest() {
+
+		if ( ! file_exists( $this->current_file_manifest ) )
+			return false;
+
+		// Remove the file manifest because it's already been archived
+		unlink( $this->current_file_manifest );
+
+		// Update the count of remaining files.
+		$this->file_manifest_remaining = $this->file_manifest_remaining - count( $this->file_manifest_already_archived );
+		if ( $this->file_manifest_remaining < 0 )
+			$this->file_manifest_remaining = 0;
+		file_put_contents( $this->get_path() . '/.file-manifest-remaining', $this->file_manifest_remaining );
+
+		$this->file_manifest_already_archived = array();
+
+	}
+
+
+	/**
+	 * Get the path to the file manifest directory
+	 * 
+	 * @access private
+	 */
+	protected function get_file_manifest_dirpath() {
+		return $this->get_path() . '/.file-manifests';
+	}
+
+	/**
+	 * Get batch of files to archive from the file manifest
+	 * Ignore any files that already have been archived
+	 * 
+	 * @access private
+	 */
+	private function get_next_files_from_file_manifest() {
+
+		if ( ! is_dir( $this->get_file_manifest_dirpath() ) )
+			return array();
+
+		$files = glob( $this->get_file_manifest_dirpath() . '/*.txt' );
+		if ( empty( $files ) )
+			return array();
+
+		$this->current_file_manifest = array_shift( $files );
+
+		$files = file_get_contents( $this->current_file_manifest );
+		$files = array_map( 'trim', explode( PHP_EOL, $files ) );
+		if ( empty( $files ) )
+			return array();
+
+		$this->file_manifest_remaining = (int)file_get_contents( $this->get_path() . '/.file-manifest-remaining' );
+
+		return $files;
+	}
+
+	/**
 	 * Get the backup type
 	 *
 	 * Defaults to complete
@@ -446,14 +661,13 @@ class WPRP_HM_Backup {
 	 * Set the backup type
 	 *
 	 * $type must be one of complete, database or file
-	 *
-	 * @access public
 	 * @param string $type
+	 * @throws Exception
 	 */
 	public function set_type( $type ) {
 
 		if ( ! is_string( $type ) || ! in_array( $type, array( 'file', 'database', 'complete' ) ) )
-			throw new Exception( 'Invalid backup type <code>' . $type . '</code> must be one of (string) file, database or complete' );
+			throw new Exception( sprintf( __( 'Invalid backup type %s must be one of (string) file, database or complete', 'wpremote' ), '<code>' . $type . '</code>' ) );
 
 		$this->type = $type;
 
@@ -507,12 +721,13 @@ class WPRP_HM_Backup {
 			'/Program Files/MySQL/MySQL Server 5.4/bin/mysqldump',
 			'/Program Files/MySQL/MySQL Server 5.1/bin/mysqldump',
 			'/Program Files/MySQL/MySQL Server 5.0/bin/mysqldump',
-			'/Program Files/MySQL/MySQL Server 4.1/bin/mysqldump'
+			'/Program Files/MySQL/MySQL Server 4.1/bin/mysqldump',
+			'/opt/local/bin/mysqldump',
 		);
 
 		// Find the one which works
 		foreach ( $mysqldump_locations as $location )
-		    if ( is_executable( self::conform_dir( $location ) ) )
+		    if ( @is_executable( self::conform_dir( $location ) ) )
 	 	    	$this->set_mysqldump_command_path( $location );
 
 		return $this->mysqldump_command_path;
@@ -568,12 +783,13 @@ class WPRP_HM_Backup {
 
 		// List of possible zip locations
 		$zip_locations = array(
-			'/usr/bin/zip'
+			'/usr/bin/zip',
+			'/opt/local/bin/zip',
 		);
 
 		// Find the one which works
 		foreach ( $zip_locations as $location )
-			if ( is_executable( self::conform_dir( $location ) ) )
+			if ( @is_executable( self::conform_dir( $location ) ) )
 				$this->set_zip_command_path( $location );
 
 		return $this->zip_command_path;
@@ -593,6 +809,60 @@ class WPRP_HM_Backup {
 
 		$this->zip_command_path = $path;
 
+	}
+
+	/**
+	 * Set up the ZipArchive instance if ZipArchive is available
+	 */
+	protected function &setup_ziparchive() {
+
+		// Instance is already open
+		if ( ! empty( $this->ziparchive ) ) {
+			$this->ziparchive->open( $this->get_archive_filepath(), ZIPARCHIVE::CREATE );
+			return $this->ziparchive;
+		}
+
+		$ziparchive = new ZipArchive;
+
+		// Try opening ZipArchive
+		if ( ! file_exists( $this->get_archive_filepath() ) )
+			$ret = $ziparchive->open( $this->get_archive_filepath(), ZIPARCHIVE::CREATE );
+		else
+			$ret = $ziparchive->open( $this->get_archive_filepath() );
+
+		// File couldn't be opened
+		if ( ! $ret )
+			return false;
+
+		// Try closing ZipArchive
+		$ret = $ziparchive->close();
+
+		// File couldn't be closed
+		if ( ! $ret )
+			return false;
+
+		// Open it once more
+		if ( ! file_exists( $this->get_archive_filepath() ) )
+			$ziparchive->open( $this->get_archive_filepath(), ZIPARCHIVE::CREATE );
+		else
+			$ziparchive->open( $this->get_archive_filepath() );
+
+		$this->ziparchive = $ziparchive;
+		return $this->ziparchive;
+	}
+
+	/**
+	 * Set up the PclZip instance
+	 *
+	 * @access protected
+	 */
+	protected function &setup_pclzip() {
+
+		if ( empty( $this->pclzip ) ) {
+			$this->load_pclzip();
+			$this->pclzip = new PclZip( $this->get_archive_filepath() );
+		}
+		return $this->pclzip;
 	}
 
 	protected function do_action( $action ) {
@@ -656,8 +926,12 @@ class WPRP_HM_Backup {
 		// Path to the mysqldump executable
 		$cmd = escapeshellarg( $this->get_mysqldump_command_path() );
 
-		// No Create DB command
+		// We don't want to create a new DB
 		$cmd .= ' --no-create-db';
+
+		// Allow lock-tables to be overridden
+		if ( ! defined( 'HMBKP_MYSQLDUMP_SINGLE_TRANSACTION' ) || HMBKP_MYSQLDUMP_SINGLE_TRANSACTION !== false )
+			$cmd .= ' --single-transaction';
 
 		// Make sure binary data is exported properly
 		$cmd .= ' --hex-blob';
@@ -673,7 +947,7 @@ class WPRP_HM_Backup {
 		$cmd .= ' -h ' . escapeshellarg( $host );
 
 		// Set the port if it was set
-		if ( ! empty( $port ) )
+		if ( ! empty( $port ) && is_numeric( $port ) )
 		    $cmd .= ' -P ' . $port;
 
 		// The file we're saving too
@@ -688,8 +962,14 @@ class WPRP_HM_Backup {
 		// Store any returned data in an error
 		$stderr = shell_exec( $cmd );
 
-		if ( $stderr )
+		// Skip the new password warning that is output in mysql > 5.6 (@see http://bugs.mysql.com/bug.php?id=66546)
+		if ( trim( $stderr ) === 'Warning: Using a password on the command line interface can be insecure.' ) {
+			$stderr = '';
+		}
+
+		if ( $stderr ) {
 			$this->error( $this->get_mysqldump_method(), $stderr );
+		}
 
 		$this->verify_mysqldump();
 
@@ -708,10 +988,18 @@ class WPRP_HM_Backup {
 
 		$this->do_action( 'hmbkp_mysqldump_started' );
 
-	    $this->db = mysql_pconnect( DB_HOST, DB_USER, DB_PASSWORD );
+	    $this->db = @mysql_pconnect( DB_HOST, DB_USER, DB_PASSWORD );
+
+	    if ( ! $this->db )
+	    	$this->db = mysql_connect( DB_HOST, DB_USER, DB_PASSWORD );
+
+	    if ( ! $this->db )
+	    	return;
 
 	    mysql_select_db( DB_NAME, $this->db );
-	    mysql_set_charset( DB_CHARSET, $this->db );
+
+	    if ( function_exists( 'mysql_set_charset') )
+	    	mysql_set_charset( DB_CHARSET, $this->db );
 
 	    // Begin new backup of MySql
 	    $tables = mysql_query( 'SHOW TABLES' );
@@ -749,6 +1037,147 @@ class WPRP_HM_Backup {
 	 */
 	public function archive() {
 
+		// If using a manifest, perform the backup in chunks
+		if ( 'database' !== $this->get_type()
+			&& $this->is_using_file_manifest()
+			&& $this->create_file_manifests() ) {
+			
+			$this->archive_via_file_manifest();
+
+		} else {
+
+			$this->archive_via_single_request();
+
+		}
+
+	}
+
+	/**
+	 * Archive with a file manifest
+	 *
+	 * @access private
+	 */
+	private function archive_via_file_manifest() {
+
+		$errors = array();
+
+		// Back up files from the file manifest in chunks
+		$next_files = $this->get_next_files_from_file_manifest();
+		do {
+
+			$this->do_action( 'hmbkp_archive_started' );
+
+			// `zip` is the most performant archive method
+			if ( $this->get_zip_command_path() ) {
+				$this->archive_method = 'zip_files';
+				$error = $this->zip_files( $next_files );
+			}
+
+			// ZipArchive is also pretty fast for chunked backups
+			else if ( class_exists( 'ZipArchive' ) && empty( $this->skip_zip_archive ) ) {
+				$this->archive_method = 'zip_archive_files';
+
+				$ret = $this->zip_archive_files( $next_files );
+				if ( ! $ret ) {
+					$this->skip_zip_archive = true;
+					continue;
+				}
+			}
+
+			// Last opportunity
+			else {
+				$this->archive_method = 'pcl_zip_files';
+				$error = $this->pcl_zip_files( $next_files );
+			}
+
+			if ( ! empty( $error ) ) {
+				$errors[] = $error;
+				unset( $error );
+			}
+
+			// Update the file manifest with these files that were archived
+			$this->file_manifest_already_archived = array_merge( $this->file_manifest_already_archived, $next_files );
+			$this->delete_current_file_manifest();
+
+			// Get the next set of files to archive
+			$next_files = $this->get_next_files_from_file_manifest();
+
+		} while( ! empty( $next_files ) );
+
+		// If the database should be included in the backup, it's included last
+		if ( 'file' !== $this->get_type() && file_exists( $this->get_database_dump_filepath() ) ) {
+
+			switch ( $this->archive_method ) {
+
+				case 'zip_archive_files':
+
+					$zip = &$this->setup_ziparchive();
+
+					$zip->addFile( $this->get_database_dump_filepath(), $this->get_database_dump_filename() );
+
+					$zip->close();
+
+					break;
+
+				case 'zip_files':
+
+					$error = shell_exec( 'cd ' . escapeshellarg( $this->get_path() ) . ' && ' . escapeshellcmd( $this->get_zip_command_path() ) . ' -uq ' . escapeshellarg( $this->get_archive_filepath() ) . ' ' . escapeshellarg( $this->get_database_dump_filename() ) . ' 2>&1' );
+
+					break;
+
+				case 'pcl_zip_files':
+
+					$pclzip = &$this->setup_pclzip();
+
+					if ( ! $pclzip->add( $this->get_database_dump_filepath(), PCLZIP_OPT_REMOVE_PATH, $this->get_path() ) )
+						$this->warning( $this->get_archive_method(), $pclzip->errorInfo( true ) );
+			
+					break;
+			}
+
+			if ( ! empty( $error ) ) {
+				$errors[] = $error;
+				unset( $error );
+			}
+		}
+
+		// If the methods produced any errors, log them
+		if ( ! empty( $errors ) )
+			$this->warning( $this->get_archive_method(), implode( ', ', $errors ) );
+
+		// ZipArchive has some special reporting requirements
+		if ( ! empty( $this->ziparchive ) ) {
+
+			if ( $this->ziparchive->status )
+				$this->warning( $this->get_archive_method(), $this->ziparchive->status );
+
+			if ( $this->ziparchive->statusSys )
+				$this->warning( $this->get_archive_method(), $this->ziparchive->statusSys );
+
+		}
+
+		// Verify and remove if errors
+		$this->verify_archive();
+
+		// Remove the file manifest
+		if ( is_dir( $this->get_file_manifest_dirpath() ) )
+			$this->rmdir_recursive( $this->get_file_manifest_dirpath() );
+
+		// Delete the database dump file
+		if ( file_exists( $this->get_database_dump_filepath() ) )
+			unlink( $this->get_database_dump_filepath() );
+
+		$this->do_action( 'hmbkp_archive_finished' );
+
+	}
+
+	/**
+	 * Archive using our traditional method of one request
+	 *
+	 * @access private
+	 */
+	private function archive_via_single_request() {
+
 		// Do we have the path to the zip command
 		if ( $this->get_zip_command_path() )
 			$this->zip();
@@ -770,6 +1199,26 @@ class WPRP_HM_Backup {
 	}
 
 	/**
+	 * Restart a failed archive process
+	 * 
+	 * @access public
+	 */
+	public function restart_archive() {
+
+		if ( $this->is_using_file_manifest() ) {
+
+			$this->archive_via_file_manifest();
+
+		} else {
+
+			$this->archive_via_single_request();
+
+		}
+
+		$this->do_action( 'hmbkp_backup_complete' );
+	}
+
+	/**
 	 * Zip using the native zip command
 	 *
 	 * @access public
@@ -781,30 +1230,47 @@ class WPRP_HM_Backup {
 		$this->do_action( 'hmbkp_archive_started' );
 
 		// Zip up $this->root with excludes
-		if ( $this->get_type() !== 'database' && $this->exclude_string( 'zip' ) )
+		if ( $this->get_type() !== 'database' && $this->exclude_string( 'zip' ) ) {
 		    $stderr = shell_exec( 'cd ' . escapeshellarg( $this->get_root() ) . ' && ' . escapeshellcmd( $this->get_zip_command_path() ) . ' -rq ' . escapeshellarg( $this->get_archive_filepath() ) . ' ./' . ' -x ' . $this->exclude_string( 'zip' ) . ' 2>&1' );
 
 		// Zip up $this->root without excludes
-		elseif ( $this->get_type() !== 'database' )
+		} elseif ( $this->get_type() !== 'database' ) {
 		    $stderr = shell_exec( 'cd ' . escapeshellarg( $this->get_root() ) . ' && ' . escapeshellcmd( $this->get_zip_command_path() ) . ' -rq ' . escapeshellarg( $this->get_archive_filepath() ) . ' ./' . ' 2>&1' );
 
+		}
+
 		// Add the database dump to the archive
-		if ( $this->get_type() !== 'file' )
+		if ( $this->get_type() !== 'file' && file_exists( $this->get_database_dump_filepath() ) )
 		    $stderr = shell_exec( 'cd ' . escapeshellarg( $this->get_path() ) . ' && ' . escapeshellcmd( $this->get_zip_command_path() ) . ' -uq ' . escapeshellarg( $this->get_archive_filepath() ) . ' ' . escapeshellarg( $this->get_database_dump_filename() ) . ' 2>&1' );
 
-		if ( $stderr )
+		if ( ! empty( $stderr ) )
 			$this->warning( $this->get_archive_method(), $stderr );
 
 		$this->verify_archive();
+	}
 
+	/**
+	 * Zip one or more files
+	 *
+	 * @access private
+	 */
+	private function zip_files( $files ) {
+
+		// Not necessary to include directories when using `zip`
+		foreach( $files as $key => $file ) {
+
+			if ( ! is_dir( $file ) )
+				continue;
+
+			unset( $files[$key] );
+		}
+
+		return shell_exec( 'cd ' . escapeshellarg( $this->get_root() ) . ' && ' . escapeshellcmd( $this->get_zip_command_path() ) . ' ' . escapeshellarg( $this->get_archive_filepath() ) . ' ' . implode( ' ', $files ) . ' -q 2>&1' );
 	}
 
 	/**
 	 * Fallback for creating zip archives if zip command is
 	 * unavailable.
-	 *
-	 * @access public
-	 * @param string $path
 	 */
 	public function zip_archive() {
 
@@ -813,10 +1279,8 @@ class WPRP_HM_Backup {
 
 		$this->do_action( 'hmbkp_archive_started' );
 
-    	$zip = new ZipArchive();
-
-    	if ( ! class_exists( 'ZipArchive' ) || ! $zip->open( $this->get_archive_filepath(), ZIPARCHIVE::CREATE ) )
-    	    return;
+		if ( false === ( $zip = &$this->setup_ziparchive() ) )
+			return;
 
 		$excludes = $this->exclude_string( 'regex' );
 
@@ -853,7 +1317,7 @@ class WPRP_HM_Backup {
 		}
 
 		// Add the database
-		if ( $this->get_type() !== 'file' )
+		if ( $this->get_type() !== 'file' && file_exists( $this->get_database_dump_filepath() ) )
 			$zip->addFile( $this->get_database_dump_filepath(), $this->get_database_dump_filename() );
 
 		if ( $zip->status )
@@ -869,13 +1333,35 @@ class WPRP_HM_Backup {
 	}
 
 	/**
+	 * Zip Archive one or more files
+	 * 
+	 * @access private
+	 */
+	private function zip_archive_files( $files ) {
+
+		if ( false === ( $zip = &$this->setup_ziparchive() ) )
+			return false;
+
+		foreach( $files as $file ) {
+
+			$full_path = trailingslashit( $this->get_root() ) . $file;
+			if ( is_dir( $full_path ) )
+				$zip->addEmptyDir( $file );
+			else
+				$zip->addFile( $full_path, $file );
+
+		}
+
+		// Avoid limitations in ZipArchive by making sure we save each batch to disk
+		$zip->close();
+		return true;
+	}
+
+	/**
 	 * Fallback for creating zip archives if zip command and ZipArchive are
 	 * unavailable.
 	 *
 	 * Uses the PclZip library that ships with WordPress
-	 *
-	 * @access public
-	 * @param string $path
 	 */
 	public function pcl_zip() {
 
@@ -888,9 +1374,7 @@ class WPRP_HM_Backup {
 
 		$_wprp_hmbkp_exclude_string = $this->exclude_string( 'regex' );
 
-		$this->load_pclzip();
-
-		$archive = new PclZip( $this->get_archive_filepath() );
+		$archive = &$this->setup_pclzip();
 
 		// Zip up everything
 		if ( $this->get_type() !== 'database' )
@@ -898,13 +1382,35 @@ class WPRP_HM_Backup {
 				$this->warning( $this->get_archive_method(), $archive->errorInfo( true ) );
 
 		// Add the database
-		if ( $this->get_type() !== 'file' )
+		if ( $this->get_type() !== 'file' && file_exists( $this->get_database_dump_filepath() ) )
 			if ( ! $archive->add( $this->get_database_dump_filepath(), PCLZIP_OPT_REMOVE_PATH, $this->get_path() ) )
 				$this->warning( $this->get_archive_method(), $archive->errorInfo( true ) );
 
 		unset( $GLOBALS['_wprp_hmbkp_exclude_string'] );
 
 		$this->verify_archive();
+
+	}
+
+	/**
+	 * Use PclZip to archive batches of files
+	 */
+	private function pcl_zip_files( $files ) {
+
+		$this->errors_to_warnings( $this->get_archive_method() );
+
+		$pclzip = &$this->setup_pclzip();
+
+		foreach( $files as $file ) {
+
+			$full_path = trailingslashit( $this->get_root() ) . $file;
+			if ( is_dir( $full_path ) )
+				continue;
+			
+			if ( ! $pclzip->add( $full_path, PCLZIP_OPT_REMOVE_PATH, $this->get_root() ) )
+				$this->warning( $this->get_archive_method(), $pclzip->errorInfo( true ) );
+
+		}
 
 	}
 
@@ -947,16 +1453,6 @@ class WPRP_HM_Backup {
 		if ( ! empty( $this->archive_verified ) )
 			return true;
 
-		// Verify using the zip command if possible
-		if ( $this->get_zip_command_path() && $this->get_archive_method() === 'zip' ) {
-
-			$verify = shell_exec( escapeshellcmd( $this->get_zip_command_path() ) . ' -T ' . escapeshellarg( $this->get_archive_filepath() ) . ' 2> /dev/null' );
-
-			if ( strpos( $verify, 'OK' ) === false )
-				$this->error( $this->get_archive_method(), $verify );
-
-		}
-
 		// If there are errors delete the backup file.
 		if ( $this->get_errors( $this->get_archive_method() ) && file_exists( $this->get_archive_filepath() ) )
 			unlink( $this->get_archive_filepath() );
@@ -982,11 +1478,22 @@ class WPRP_HM_Backup {
 
 		$this->files = array();
 
-		if ( defined( 'RecursiveDirectoryIterator::FOLLOW_SYMLINKS' ) )
+		// We only want to use the RecursiveDirectoryIterator if the FOLLOW_SYMLINKS flag is available
+		if ( defined( 'RecursiveDirectoryIterator::FOLLOW_SYMLINKS' ) ) {
+
 			$this->files = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $this->get_root(), RecursiveDirectoryIterator::FOLLOW_SYMLINKS ), RecursiveIteratorIterator::SELF_FIRST, RecursiveIteratorIterator::CATCH_GET_CHILD );
 
-		else
+			// Skip dot files if the SKIP_Dots flag is available
+			if ( defined( 'RecursiveDirectoryIterator::SKIP_DOTS' ) )
+				$this->files->setFlags( RecursiveDirectoryIterator::SKIP_DOTS + RecursiveDirectoryIterator::FOLLOW_SYMLINKS );
+
+
+		// If RecursiveDirectoryIterator::FOLLOW_SYMLINKS isn't available then fallback to a less memory efficient method
+		} else {
+
 			$this->files = $this->get_files_fallback( $this->get_root() );
+
+		}
 
 		return $this->files;
 
@@ -1371,8 +1878,8 @@ class WPRP_HM_Backup {
 	/**
 	 * Add backquotes to tables and db-names in SQL queries. Taken from phpMyAdmin.
 	 *
-	 * @access private
-	 * @param mixed $a_name
+	 * @param $a_name
+	 * @return array|string
 	 */
 	private function sql_backquote( $a_name ) {
 
@@ -1475,7 +1982,7 @@ class WPRP_HM_Backup {
 	    	$field_set[$j] = $this->sql_backquote( mysql_field_name( $result, $j ) );
 	    	$type = mysql_field_type( $result, $j );
 
-	    	if ( $type === 'tinyint' || $type === 'smallint' || $type === 'mediumint' || $type === 'int' || $type === 'bigint'  || $type === 'timestamp')
+	    	if ( $type === 'tinyint' || $type === 'smallint' || $type === 'mediumint' || $type === 'int' || $type === 'bigint' )
 	    		$field_num[$j] = true;
 
 	    	else
@@ -1548,9 +2055,9 @@ class WPRP_HM_Backup {
 	 * Better addslashes for SQL queries.
 	 * Taken from phpMyAdmin.
 	 *
-	 * @access private
-	 * @param string $a_string. (default: '')
-	 * @param bool $is_like. (default: false)
+	 * @param string $a_string
+	 * @param bool   $is_like
+	 * @return mixed
 	 */
 	private function sql_addslashes( $a_string = '', $is_like = false ) {
 
@@ -1567,9 +2074,8 @@ class WPRP_HM_Backup {
 
 	/**
 	 * Write the SQL file
-	 *
-	 * @access private
 	 * @param string $sql
+	 * @return bool
 	 */
 	private function write_sql( $sql ) {
 
@@ -1581,10 +2087,10 @@ class WPRP_HM_Backup {
 	    	if ( ! $handle = @fopen( $sqlname, 'a' ) )
 	    		return;
 
-	    	if ( ! fwrite( $handle, $sql ) )
+	    	if ( ! @fwrite( $handle, $sql ) )
 	    		return;
 
-	    	fclose( $handle );
+	    	@fclose( $handle );
 
 	    	return true;
 
@@ -1613,14 +2119,14 @@ class WPRP_HM_Backup {
 	 * @param string $context
 	 * @param mixed $error
 	 */
-	private function error( $context, $error ) {
+	public function error( $context, $error ) {
 
 		if ( empty( $context ) || empty( $error ) )
 			return;
 
-		$this->do_action( 'hmbkp_error' );
-
 		$this->errors[$context][$_key = md5( implode( ':' , (array) $error ) )] = $error;
+
+		$this->do_action( 'hmbkp_error' );
 
 	}
 
@@ -1637,8 +2143,8 @@ class WPRP_HM_Backup {
 		if ( empty( $errors ) )
 			return;
 
-		foreach ( $errors as $error_context => $errors )
-			foreach( $errors as $error )
+		foreach ( $errors as $error_context => $context_errors )
+			foreach( $context_errors as $error )
 				$this->warning( $error_context, $error );
 
 		if ( $context )
@@ -1682,16 +2188,14 @@ class WPRP_HM_Backup {
 	}
 
 	/**
-	 * Custom error handler for catching errors
+	 * Custom error handler for catching php errors
 	 *
-	 * @access private
 	 * @param string $type
-	 * @param string $message
-	 * @param string $file
-	 * @param string $line
+	 * @return bool
 	 */
 	public function error_handler( $type ) {
 
+		// Skip strict & deprecated warnings
 		if ( ( defined( 'E_DEPRECATED' ) && $type === E_DEPRECATED ) || ( defined( 'E_STRICT' ) && $type === E_STRICT ) || error_reporting() === 0 )
 			return false;
 
@@ -1702,6 +2206,37 @@ class WPRP_HM_Backup {
 		$this->warning( 'php', implode( ', ', array_splice( $args, 0, 3 ) ) );
 
 		return false;
+
+	}
+
+	/**
+	 * Recursively delete a directory including
+	 * all the files and sub-directories.
+	 *
+	 * @param string $dir
+	 * @return bool
+	 */
+	public static function rmdir_recursive( $dir ) {
+
+		if ( is_file( $dir ) )
+			@unlink( $dir );
+
+	    if ( ! is_dir( $dir ) )
+	    	return false;
+
+	    $files = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir ), RecursiveIteratorIterator::CHILD_FIRST, RecursiveIteratorIterator::CATCH_GET_CHILD );
+
+		foreach ( $files as $file ) {
+
+			if ( $file->isDir() )
+				@rmdir( $file->getPathname() );
+
+			else
+				@unlink( $file->getPathname() );
+
+		}
+
+		@rmdir( $dir );
 
 	}
 

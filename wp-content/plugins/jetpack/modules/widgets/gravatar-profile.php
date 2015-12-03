@@ -18,6 +18,7 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 	function __construct() {
 		parent::__construct(
 			'grofile',
+			/** This filter is documented in modules/widgets/facebook-likebox.php */
 			apply_filters( 'jetpack_widget_name', __( 'Gravatar Profile', 'jetpack' ) ),
 			array(
 				'classname'   => 'widget-grofile grofile',
@@ -31,6 +32,13 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 	}
 
 	function widget( $args, $instance ) {
+
+		$instance = wp_parse_args( $instance, array(
+			'title' => '',
+			'email' => ''
+		) );
+
+		/** This filter is documented in core/src/wp-includes/default-widgets.php */
 		$title = apply_filters( 'widget_title', $instance['title'] );
 
 		if ( !$instance['email'] ) {
@@ -59,7 +67,7 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 				'urls'         => array(),
 				'accounts'     => array(),
 			) );
-			$gravatar_url = add_query_arg( 's', 200, $profile['thumbnailUrl'] ); // the default grav returned by grofiles is super small
+			$gravatar_url = add_query_arg( 's', 320, $profile['thumbnailUrl'] ); // the default grav returned by grofiles is super small
 
 			wp_enqueue_style(
 				'gravatar-profile-widget',
@@ -76,10 +84,10 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 			);
 
 			?>
-			<img src="<?php echo esc_url( $gravatar_url ); ?>" class="grofile-thumbnail no-grav" style="width: auto; max-width: 200px;" />
+			<img src="<?php echo esc_url( $gravatar_url ); ?>" class="grofile-thumbnail no-grav" alt="<?php echo esc_attr( $profile['displayName'] ); ?>" />
 			<div class="grofile-meta">
 				<h4><a href="<?php echo esc_url( $profile['profileUrl'] ); ?>"><?php echo esc_html( $profile['displayName'] ); ?></a></h4>
-				<p><?php echo wp_kses_data( $profile['aboutMe'] ); ?></p>
+				<p><?php echo wp_kses_post( $profile['aboutMe'] ); ?></p>
 			</div>
 
 			<?php
@@ -92,7 +100,7 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 
 			?>
 
-			<h4><a href="<?php echo esc_url( $profile['profileUrl'] ); ?>" class="grofile-full-link"><?php esc_html_e( 'View Full Profile &rarr;', 'jetpack' ); ?></a></h4>
+			<p><a href="<?php echo esc_url( $profile['profileUrl'] ); ?>" class="grofile-full-link"><?php echo esc_html( apply_filters( 'jetpack_gravatar_full_profile_title', __( 'View Full Profile &rarr;', 'jetpack' ) ) ); ?></a></p>
 
 			<?php
 
@@ -112,13 +120,16 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 			return;
 		?>
 
-			<h4><?php esc_html_e( 'Personal Links', 'jetpack' ); ?></h4>
+			<h4><?php echo esc_html( apply_filters( 'jetpack_gravatar_personal_links_title', __( 'Personal Links', 'jetpack' ) ) ); ?></h4>
 			<ul class="grofile-urls grofile-links">
 
 			<?php foreach( $personal_links as $personal_link ) : ?>
 				<li>
 					<a href="<?php echo esc_url( $personal_link['value'] ); ?>">
-						<?php echo esc_html( $personal_link['title'] ); ?>
+						<?php
+							$link_title = ( ! empty( $personal_link['title'] ) ) ? $personal_link['title'] : $personal_link['value'];
+							echo esc_html( $link_title );
+						?>
 					</a>
 				</li>
 			<?php endforeach; ?>
@@ -132,7 +143,7 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 			return;
 		?>
 
-		<h4><?php esc_html_e( 'Verified Services', 'jetpack' ); ?></h4>
+		<h4><?php echo esc_html( apply_filters( 'jetpack_gravatar_verified_services_title', __( 'Verified Services', 'jetpack' ) ) ); ?></h4>
 		<ul class="grofile-urls grofile-accounts">
 
 		<?php foreach( $accounts as $account ) :
@@ -263,20 +274,20 @@ class Jetpack_Gravatar_Profile_Widget extends WP_Widget {
 		$cache_key = 'grofile-' . $hashed_email;
 
 		if( ! $profile = get_transient( $cache_key ) ) {
-			$profile_url = esc_url_raw( sprintf( '%s.gravatar.com/%s.php', ( is_ssl() ? 'https://secure' : 'http://www' ), $hashed_email ), array( 'http', 'https' ) );
+			$profile_url = esc_url_raw( sprintf( '%s.gravatar.com/%s.json', ( is_ssl() ? 'https://secure' : 'http://www' ), $hashed_email ), array( 'http', 'https' ) );
 
 			$expire = 300;
 			$response = wp_remote_get( $profile_url, array( 'User-Agent' => 'WordPress.com Gravatar Profile Widget' ) );
 			$response_code = wp_remote_retrieve_response_code( $response );
 			if ( 200 == $response_code ) {
 				$profile = wp_remote_retrieve_body( $response );
-				$profile = unserialize( $profile );
+				$profile = json_decode( $profile, true );
 
 				if ( is_array( $profile ) && ! empty( $profile['entry'] ) && is_array( $profile['entry'] ) ) {
 					$expire = 900; // cache for 15 minutes
 					$profile = $profile['entry'][0];
 				} else {
-					// Something strange happend.  Cache for 5 minutes.
+					// Something strange happened.  Cache for 5 minutes.
 					$profile = array();
 				}
 

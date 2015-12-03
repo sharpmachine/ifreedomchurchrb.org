@@ -9,8 +9,6 @@ function _wprp_get_plugins() {
 
 	require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 
-	_wpr_add_non_extend_plugin_support_filter();
-
 	// Get all plugins
 	$plugins = get_plugins();
 
@@ -38,22 +36,36 @@ function _wprp_get_plugins() {
 	else
 		$current = get_option( 'update_plugins' );
 
-	foreach ( (array) $plugins as $plugin_file => $plugin ) {
+	// Premium plugins that have adopted the ManageWP API report new plugins by this filter
+	$manage_wp_updates = apply_filters( 'mwp_premium_update_notification', array() );
 
-		$new_version = isset( $current->response[$plugin_file] ) ? $current->response[$plugin_file]->new_version : null;
+	foreach ( (array) $plugins as $plugin_file => $plugin ) {
 
 	    if ( is_plugin_active( $plugin_file ) )
 	    	$plugins[$plugin_file]['active'] = true;
-
 	    else
 	    	$plugins[$plugin_file]['active'] = false;
 
-	    if ( $new_version ) {
-	    	$plugins[$plugin_file]['latest_version'] = $new_version;
-	    	$plugins[$plugin_file]['latest_package'] = $current->response[$plugin_file]->package;
+	    $manage_wp_plugin_update = false;
+	    foreach( $manage_wp_updates as $manage_wp_update ) {
+
+			if ( ! empty( $manage_wp_update['Name'] ) && $plugin['Name'] == $manage_wp_update['Name'] )
+				$manage_wp_plugin_update = $manage_wp_update;
+
+	    }
+
+	    if ( $manage_wp_plugin_update ) {
+
+			$plugins[$plugin_file]['latest_version'] = $manage_wp_plugin_update['new_version'];
+
+	    } else if ( isset( $current->response[$plugin_file] ) ) {
+
+			$plugins[$plugin_file]['latest_version'] = $current->response[$plugin_file]->new_version;
+			$plugins[$plugin_file]['latest_package'] = $current->response[$plugin_file]->package;
 	    	$plugins[$plugin_file]['slug'] = $current->response[$plugin_file]->slug;
 
 	    } else {
+
 	    	$plugins[$plugin_file]['latest_version'] = $plugin['Version'];
 
 	    }
@@ -70,75 +82,153 @@ function _wprp_get_plugins() {
  * @param mixed $plugin
  * @return array
  */
-function _wprp_upgrade_plugin( $plugin ) {
+function _wprp_update_plugin( $plugin_file, $args ) {
+	global $wprp_zip_update;
+
+	if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS )
+		return new WP_Error( 'disallow-file-mods', __( "File modification is disabled with the DISALLOW_FILE_MODS constant.", 'wpremote' ) );
 
 	include_once ( ABSPATH . 'wp-admin/includes/admin.php' );
-
-	if ( ! _wprp_supports_plugin_upgrade() )
-		return array( 'status' => 'error', 'error' => 'WordPress version too old for plugin upgrades' );
-
-	_wpr_add_non_extend_plugin_support_filter();
+	require_once ( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
+	require_once WPRP_PLUGIN_PATH . 'inc/class-wprp-plugin-upgrader-skin.php';
 
 	// check for filesystem access
 	if ( ! _wpr_check_filesystem_access() )
-		return array( 'status' => 'error', 'error' => 'The filesystem is not writable with the supplied credentials' );
+		return new WP_Error( 'filesystem-not-writable', __( 'The filesystem is not writable with the supplied credentials', 'wpremote' ) );
+
+	$is_active         = is_plugin_active( $plugin_file );
+	$is_active_network = is_plugin_active_for_network( $plugin_file );
+
+	foreach( get_plugins() as $path => $maybe_plugin ) {
+
+		if ( $path == $plugin_file ) {
+			$plugin = $maybe_plugin;
+			break;
+		}
+
+	}
+
+	// Permit specifying a zip URL to update the plugin with
+	if ( ! empty( $args['zip_url'] ) ) {
+
+		$zip_url = $args['zip_url'];
+
+	} else {
+
+		// Check to see if this is a premium plugin that supports the ManageWP implementation
+		$manage_wp_updates = apply_filters( 'mwp_premium_perform_update', array() );
+		$manage_wp_plugin_update = false;
+		foreach( $manage_wp_updates as $manage_wp_update ) {
+
+			if ( ! empty( $manage_wp_update['Name'] )
+				&& $plugin['Name'] == $manage_wp_update['Name']
+				&& ! empty( $manage_wp_update['url'] ) ) {
+				$zip_url = $manage_wp_update['url'];
+				break;
+			}
+
+		}
+
+	}
 
 	$skin = new WPRP_Plugin_Upgrader_Skin();
 	$upgrader = new Plugin_Upgrader( $skin );
-	$is_active = is_plugin_active( $plugin );
 
-	// Force a plugin update check
-	wp_update_plugins();
+	// Fake out the plugin upgrader with our package url
+	if ( ! empty( $zip_url ) ) {
+		$wprp_zip_update = array(
+			'plugin_file'    => $plugin_file,
+			'package'        => $zip_url,
+		);
+		add_filter( 'pre_site_transient_update_plugins', '_wprp_forcably_filter_update_plugins' );
+	} else {
+		wp_update_plugins();
+	}
 
 	// Do the upgrade
 	ob_start();
-	$result = $upgrader->upgrade( $plugin );
+	$result = $upgrader->upgrade( $plugin_file );
 	$data = ob_get_contents();
 	ob_clean();
 
-	if ( ( ! $result && ! is_null( $result ) ) || $data )
-		return array( 'status' => 'error', 'error' => 'file_permissions_error' );
+	if ( $manage_wp_plugin_update )
+		remove_filter( 'pre_site_transient_update_plugins', '_wprp_forcably_filter_update_plugins' );
 
-	elseif ( is_wp_error( $result ) )
-		return array( 'status' => 'error', 'error' => $result->get_error_code() );
+	if ( ! empty( $skin->error ) )
 
-	if ( $skin->error )
-		return array( 'status' => 'error', 'error' => $skin->error );
+		return new WP_Error( 'plugin-upgrader-skin', $upgrader->strings[$skin->error] );
+
+	else if ( is_wp_error( $result ) )
+
+		return $result;
+
+	else if ( ( ! $result && ! is_null( $result ) ) || $data )
+
+		return new WP_Error( 'plugin-update', __( 'Unknown error updating plugin.', 'wpremote' ) );
 
 	// If the plugin was activited, we have to re-activate it
-	if ( $is_active ) {
+	// but if activate_plugin() fatals, then we'll just have to return 500
+	if ( $is_active )
+		activate_plugin( $plugin_file, '', $is_active_network, true );
 
-		// we can not use the "normal" way or lazy activating, as thet requires wpremote to be activated
-		if ( strpos( $plugin, 'wpremote' ) !== false ) {
-			activate_plugin( $plugin, '', false, true );
-			return array( 'status' => 'success' );
-		}
+	return array( 'status' => 'success' );
+}
 
-		// we do a remote request to activate, as we don't want to kill any installs
-		$data = array( 'actions' => array( 'activate_plugin' ), 'plugin' => $plugin, 'timestamp' => (string) time() );
-		$data['wpr_verify_key'] = WPR_API_Request::generate_hash( $data );
+/**
+ * Filter `update_plugins` to produce a response it will understand
+ * so we can have the Upgrader skin handle the update
+ */
+function _wprp_forcably_filter_update_plugins() {
+	global $wprp_zip_update;
 
-		$args = array( 'body' => $data );
+	$current = new stdClass;
+	$current->response = array();
 
-		$request = wp_remote_post( get_bloginfo( 'url' ), $args );
+	$plugin_file = $wprp_zip_update['plugin_file'];
+	$current->response[$plugin_file] = new stdClass;
+	$current->response[$plugin_file]->package = $wprp_zip_update['package'];
 
-		if ( is_wp_error( $request ) ) {
-			return array( 'status' => 'error', 'error' => $request->get_error_code() );
-		}
+	return $current;
+}
 
-		$body = wp_remote_retrieve_body( $request );
+/**
+ * Install a plugin on this site
+ */
+function _wprp_install_plugin( $plugin, $args = array() ) {
 
-		if ( ! $json = @json_decode( $body ) )
-			return array( 'status' => 'error', 'error' => 'The plugin was updated, but failed to re-activate.' );
+	if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS )
+		return new WP_Error( 'disallow-file-mods', __( "File modification is disabled with the DISALLOW_FILE_MODS constant.", 'wpremote' ) );
 
-		$json = $json->activate_plugin;
+	include_once ABSPATH . 'wp-admin/includes/admin.php';
+	include_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	include_once ABSPATH . 'wp-includes/update.php';
+	require_once ( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
+	require_once WPRP_PLUGIN_PATH . 'inc/class-wprp-plugin-upgrader-skin.php';
 
-		if ( empty( $json->status ) )
-			return array( 'status' => 'error', 'error' => 'The plugin was updated, but failed to re-activate. The activation reuest returned no response' );
+	// Access the plugins_api() helper function
+	include_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+	$api_args = array(
+		'slug' => $plugin,
+		'fields' => array( 'sections' => false )
+		);
+	$api = plugins_api( 'plugin_information', $api_args );
 
-		if ( $json->status != 'success' )
-			return array( 'status' => 'error', 'error' => 'The plugin was updated, but failed to re-activate. The activation reuest returned response: ' . $json->status );
-	}
+	if ( is_wp_error( $api ) )
+		return $api;
+
+	$skin = new WPRP_Plugin_Upgrader_Skin();
+	$upgrader = new Plugin_Upgrader( $skin );
+
+	// The best way to get a download link for a specific version :(
+	// Fortunately, we can depend on a relatively consistent naming pattern
+	if ( ! empty( $args['version'] ) && 'stable' != $args['version'] )
+		$api->download_link = str_replace( $api->version . '.zip', $args['version'] . '.zip', $api->download_link );
+
+	$result = $upgrader->install( $api->download_link );
+	if ( is_wp_error( $result ) )
+		return $result;
+	else if ( ! $result )
+		return new WP_Error( 'plugin-install', __( 'Unknown error installing plugin.', 'wpremote' ) );
 
 	return array( 'status' => 'success' );
 }
@@ -150,117 +240,64 @@ function _wprp_activate_plugin( $plugin ) {
 	$result = activate_plugin( $plugin );
 
 	if ( is_wp_error( $result ) )
-		return array( 'status' => 'error', 'error' => $result->get_error_code() );
+		return $result;
 
 	return array( 'status' => 'success' );
 }
 
 /**
- * Check if the site can support plugin upgrades
- *
- * @todo should probably check if we have direct filesystem access
- * @todo can we remove support for versions which don't support Plugin_Upgrader
- * @return bool
+ * Deactivate a plugin on this site.
  */
-function _wprp_supports_plugin_upgrade() {
+function _wprp_deactivate_plugin( $plugin ) {
 
-	include_once ( ABSPATH . 'wp-admin/includes/admin.php' );
+	include_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-	return class_exists( 'Plugin_Upgrader' );
+	if ( is_plugin_active( $plugin ) )
+		deactivate_plugins( $plugin );
 
+	return array( 'status' => 'success' );
 }
 
-function _wpr_add_non_extend_plugin_support_filter() {
-    add_filter( 'pre_set_site_transient_update_plugins', '_wpr_add_non_extend_plugin_support' );
-}
+/**
+ * Uninstall a plugin on this site.
+ */
+function _wprp_uninstall_plugin( $plugin ) {
+	global $wp_filesystem;
 
-function _wpr_add_non_extend_plugin_support( $value ) {
+	if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS )
+		return new WP_Error( 'disallow-file-mods', __( "File modification is disabled with the DISALLOW_FILE_MODS constant.", 'wpremote' ) );
 
-    foreach( $non_extend_list = _wprp_get_non_extend_plugins_data() as $key => $anon_function ) {
+	include_once ABSPATH . 'wp-admin/includes/admin.php';
+	include_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	include_once ABSPATH . 'wp-includes/update.php';
 
-        if ( ( $returned = call_user_func( $non_extend_list[$key] ) ) )
-            $value->response[$returned->plugin_location] = $returned;
-    }
+	if ( ! _wpr_check_filesystem_access() || ! WP_Filesystem() )
+		return new WP_Error( 'filesystem-not-writable', __( 'The filesystem is not writable with the supplied credentials', 'wpremote' ) );
 
-    return $value;
+	$plugins_dir = $wp_filesystem->wp_plugins_dir();
+	if ( empty( $plugins_dir ) )
+		return new WP_Error( 'missing-plugin-dir', __( 'Unable to locate WordPress Plugin directory.' , 'wpremote' ) );
 
-}
+	$plugins_dir = trailingslashit( $plugins_dir );
 
+	if ( is_uninstallable_plugin( $plugin ) )
+		uninstall_plugin( $plugin );
 
-function _wprp_get_non_extend_plugins_data() {
+	$this_plugin_dir = trailingslashit( dirname( $plugins_dir . $plugin ) );
+	// If plugin is in its own directory, recursively delete the directory.
+	if ( strpos( $plugin, '/' ) && $this_plugin_dir != $plugins_dir ) //base check on if plugin includes directory separator AND that it's not the root plugin folder
+		$deleted = $wp_filesystem->delete( $this_plugin_dir, true );
+	else
+		$deleted = $wp_filesystem->delete( $plugins_dir . $plugin );
 
-    return array(
-        'gravity_forms' => '_wpr_get_gravity_form_plugin_data',
-        'backupbuddy' => '_wpr_get_backupbuddy_plugin_data',
-        'tribe_events_pro' => '_wpr_get_tribe_events_pro_plugin_data'
-    );
-
-}
-
-function _wpr_get_gravity_form_plugin_data() {
-
-    if ( ! class_exists('GFCommon') || ! method_exists( 'GFCommon', 'get_version_info' ) || ! method_exists( 'RGForms', 'premium_update_push' ) )
-        return false;
-
-    $version_data  = GFCommon::get_version_info();
-    $plugin_data   = reset( RGForms::premium_update_push( array() ) );
-
-    if ( empty( $version_data['url'] ) || empty( $version_data['is_valid_key'] ) || empty( $plugin_data['new_version'] ) || empty( $plugin_data['PluginURI'] ) || empty( $plugin_data['slug'] ) )
-        return false;
-
-    return (object) array(
-        'plugin_location' => $plugin_data['slug'], //Not in standard structure but don't forget to include it!
-        'id'              => 999999999,
-        'slug'            => 'gravityforms',
-        'url'             => $plugin_data['PluginURI'],
-        'package'         => $version_data['url'],
-        'new_version'     => $version_data['version']
-    );
-
-}
-
-function _wpr_get_backupbuddy_plugin_data() {
-
-	if ( !class_exists('pb_backupbuddy') )
-		return false;
-
-	require_once( pb_backupbuddy::plugin_path() . '/pluginbuddy/lib/updater/updater.php' );
-	$preloader_class = 'pb_' . pb_backupbuddy::settings( 'slug' ) . '_updaterpreloader';
-	$updater_preloader = new $preloader_class( pb_backupbuddy::settings( 'slug' ) );
-	$updater_preloader->upgrader_register();
-	$updater_preloader->upgrader_select();
-
-	if ( !is_a( pb_backupbuddy::$_updater, 'pb_backupbuddy_updater' ) || !method_exists( pb_backupbuddy::$_updater, 'check_for_updates' ) )
-		return false;
-
-	$current_version = pb_backupbuddy::settings( 'version' );
-	$update_data = pb_backupbuddy::$_updater->check_for_updates();
-
-	if ( $update_data->key_status != 'ok' || version_compare( $update_data->new_version, $current_version, '<=' ) )
-		return false;
-
-	$update_data->plugin_location = plugin_basename( pb_backupbuddy::plugin_path() . '/backupbuddy.php' ); // needed in _wpr_add_non_extend_plugin_support()
-
-	return $update_data;
-
-}
-
-function _wpr_get_tribe_events_pro_plugin_data() {
-
-	if ( !class_exists( 'TribeEventsPro' ) || ! class_exists( 'PluginUpdateEngineChecker' ) )
-		return false;
-
-	$events = TribeEventsPro::instance();
-	$updater = new PluginUpdateEngineChecker( $events->updateUrl, $events->pluginSlug, array(), plugin_basename( $events->pluginPath . 'events-calendar-pro.php' ) );
-	$state = get_option( $updater->optionName );
-
-	if ( !is_a( $state->update, 'PluginUpdateUtility' ) )
-		return false;
-
-	if ( version_compare( $state->update->version, $updater->getInstalledVersion(), '<=' ) )
-		return false;
-
-	$update_data = $state->update->toWpFormat();
-	$update_data->plugin_location = $updater->pluginFile; // needed in _wpr_add_non_extend_plugin_support()
+	if ( $deleted ) {
+		if ( $current = get_site_transient('update_plugins') ) {
+			unset( $current->response[$plugin] );
+			set_site_transient('update_plugins', $current);
+		}
+		return array( 'status' => 'success' );
+	} else {
+		return new WP_Error( 'plugin-uninstall', __( 'Plugin uninstalled, but not deleted.', 'wpremote' ) );
+	}
 
 }

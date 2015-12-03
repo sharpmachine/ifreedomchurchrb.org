@@ -9,6 +9,7 @@ $show_plugin_feed = false;
 if ( !$configuration->get('user_has_donated', false) ) {
 	$show_plugin_feed = true;
 }
+$show_plugin_feed = false; //Disabled for now to make room for the EmbedPlus banner.
 ?>
 
 <!-- "More plugins" RSS feed -->

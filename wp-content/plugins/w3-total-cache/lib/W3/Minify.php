@@ -335,6 +335,7 @@ class W3_Minify {
      */
     function log($msg) {
         $data = sprintf("[%s] [%s] [%s] %s\n", date('r'), $_SERVER['REQUEST_URI'], (!empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '-'), $msg);
+        $data = strtr($data, '<>', '..');
 
         $filename = w3_debug_log('minify');
         return @file_put_contents($filename, $data, FILE_APPEND);
@@ -388,6 +389,9 @@ class W3_Minify {
                             $this->error(sprintf('Unable to cache remote file: "%s"', $file));
                         }
                     } else {
+                        if (!w3_is_multisite() && strpos(trailingslashit(WP_CONTENT_DIR), trailingslashit(w3_get_site_root())) !== false)
+                            $file = ltrim(w3_get_site_path(), '/') . str_replace(ltrim(w3_get_site_path(), '/'), '', $file);
+
                         $path = w3_get_document_root() . '/' . $file;
 
                         if (file_exists($path)) {
@@ -1099,8 +1103,10 @@ class W3_Minify {
      * @return array
      */
     private function _minify_path_replacements() {
+        $theme = get_theme_root();
+
         return array(
-            ltrim(str_replace(w3_get_document_root(), '', w3_path(get_theme_root())), '/'),
+            ltrim(str_replace(w3_get_document_root(), '', w3_path($theme)), '/'),
             ltrim(str_replace(w3_get_document_root(), '', w3_path(WP_PLUGIN_DIR)), '/'),
             ltrim(str_replace(w3_get_document_root(), '', w3_path(WPMU_PLUGIN_DIR)), '/'),
             WPINC . '/js/jquery',

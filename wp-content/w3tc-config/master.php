@@ -1,7 +1,7 @@
 <?php
 
 return array(
-	'version' => '0.9.2.9',
+	'version' => '0.9.4',
 	'cluster.messagebus.debug' => false,
 	'cluster.messagebus.enabled' => false,
 	'cluster.messagebus.sns.region' => '',
@@ -41,9 +41,9 @@ return array(
 		10 => '\\bfound_rows\\(\\)',
 		11 => '\\bw3tc_request_data\\b',
 	),
-	'objectcache.enabled' => false,
+	'objectcache.enabled' => true,
 	'objectcache.debug' => false,
-	'objectcache.engine' => 'file',
+	'objectcache.engine' => 'apc',
 	'objectcache.file.gc' => 3600,
 	'objectcache.file.locking' => false,
 	'objectcache.memcached.servers' => array(
@@ -84,7 +84,7 @@ return array(
 	'pgcache.enabled' => true,
 	'pgcache.comment_cookie_ttl' => 1800,
 	'pgcache.debug' => false,
-	'pgcache.engine' => 'file_generic',
+	'pgcache.engine' => 'apc',
 	'pgcache.file.gc' => 3600,
 	'pgcache.file.nfs' => false,
 	'pgcache.file.locking' => false,
@@ -359,17 +359,10 @@ return array(
 	),
 	'cdn.reject.ssl' => false,
 	'cdncache.enabled' => false,
-	'cloudflare.enabled' => false,
-	'cloudflare.email' => 'sharpmachine',
-	'cloudflare.key' => 'xtape0Px',
-	'cloudflare.zone' => '',
-	'cloudflare.ips.ip4' => array(
-	),
-	'cloudflare.ips.ip6' => array(
-	),
 	'varnish.enabled' => false,
 	'varnish.debug' => false,
 	'varnish.servers' => array(
+		0 => '',
 	),
 	'browsercache.enabled' => true,
 	'browsercache.no404wp' => false,
@@ -590,10 +583,9 @@ return array(
 	'widget.pagespeed.key' => '',
 	'notes.wp_content_changed_perms' => true,
 	'notes.wp_content_perms' => false,
-	'notes.php_is_old' => true,
 	'notes.theme_changed' => false,
 	'notes.wp_upgraded' => false,
-	'notes.plugins_updated' => true,
+	'notes.plugins_updated' => false,
 	'notes.cdn_upload' => false,
 	'notes.cdn_reupload' => false,
 	'notes.need_empty_pgcache' => false,
@@ -618,7 +610,6 @@ return array(
 	'timelimit.cdn_import' => 600,
 	'timelimit.cdn_test' => 300,
 	'timelimit.cdn_container_create' => 300,
-	'timelimit.cloudflare_api_request' => 180,
 	'timelimit.domain_rename' => 120,
 	'timelimit.minify_recommendations' => 600,
 	'minify.auto.filename_length' => 251,
@@ -640,4 +631,5 @@ return array(
 	'newrelic.cache_time' => 5,
 	'newrelic.enable_xmit' => false,
 	'newrelic.use_network_wide_id' => false,
+	'pgcache.late_init' => true,
 );
